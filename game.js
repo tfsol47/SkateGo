@@ -1,0 +1,363 @@
+const W = window.innerWidth;
+const H = window.innerHeight;
+
+const GROUND_Y = H - 20;
+const SKATER_START_Y = GROUND_Y - 100;
+
+// ============================================================
+// MENU SCENE
+// ============================================================
+class MenuScene extends Phaser.Scene {
+  constructor() { super({ key: 'MenuScene' }); }
+  preload() {}
+
+  create() {
+    this.add.rectangle(0, 0, W, H, 0x000000).setOrigin(0, 0);
+
+    this.add.text(W / 2, H * 0.2, 'SKATE GO', {
+      fontSize: '48px', fill: '#ffffff', fontFamily: '"Press Start 2P"'
+    }).setOrigin(0.5);
+
+    this.add.text(W / 2, H * 0.35, 'CHOOSE YOUR CITY', {
+      fontSize: '20px', fill: '#aaaaaa', fontFamily: '"Press Start 2P"'
+    }).setOrigin(0.5);
+
+    const nightBtn = this.add.rectangle(W / 2 - 200, H * 0.55, 320, 80, 0x1a1a2e).setInteractive();
+    this.add.text(W / 2 - 200, H * 0.55, 'NIGHT CITY', {
+      fontSize: '18px', fill: '#00ffff', fontFamily: '"Press Start 2P"'
+    }).setOrigin(0.5);
+
+    const sunsetBtn = this.add.rectangle(W / 2 + 200, H * 0.55, 320, 80, 0x2d1b00).setInteractive();
+    this.add.text(W / 2 + 200, H * 0.55, 'SUNSET\nSUBURB', {
+      fontSize: '18px', fill: '#ff6600', fontFamily: '"Press Start 2P"', align: 'center'
+    }).setOrigin(0.5);
+
+    nightBtn.on('pointerover',  () => nightBtn.setFillStyle(0x2a2a4e));
+    nightBtn.on('pointerout',   () => nightBtn.setFillStyle(0x1a1a2e));
+    sunsetBtn.on('pointerover', () => sunsetBtn.setFillStyle(0x4d3b00));
+    sunsetBtn.on('pointerout',  () => sunsetBtn.setFillStyle(0x2d1b00));
+    nightBtn.on('pointerdown',  () => this.scene.start('GameScene', { theme: 'night' }));
+    sunsetBtn.on('pointerdown', () => this.scene.start('GameScene', { theme: 'sunset' }));
+
+    this.add.text(W / 2, H * 0.8, 'SPACE / UP = JUMP          K = KICKFLIP', {
+      fontSize: '12px', fill: '#555555', fontFamily: '"Press Start 2P"'
+    }).setOrigin(0.5);
+  }
+
+  update() {}
+}
+
+// ============================================================
+// GAME SCENE
+// ============================================================
+class GameScene extends Phaser.Scene {
+  constructor() { super({ key: 'GameScene' }); }
+  init(data) { this.theme = data.theme || 'night'; }
+  preload() {}
+
+  create() {
+    const theme = this.theme;
+
+    const C = {
+      night: {
+        skyTop:     0x04040f,
+        skyMid:     0x0a0a2a,
+        skyBot:     0x0d1235,
+        buildFar:   0x0c0c22,
+        buildNear:  0x161630,
+        winFar:     0x00ffff,
+        winNear:    0x44ffff,
+        ground:     0x00cc00,
+        groundDark: 0x005500,
+        obstacle:   0xff0044,
+        hudColor:   '#00ffff',
+      },
+      sunset: {
+        skyTop:     0x0a0000,
+        skyMid:     0xcc2200,
+        skyBot:     0xff7700,
+        buildFar:   0x120800,
+        buildNear:  0x1e0e00,
+        winFar:     0xffaa00,
+        winNear:    0xffcc44,
+        ground:     0xaa5500,
+        groundDark: 0x552200,
+        obstacle:   0x8b0000,
+        hudColor:   '#ffaa00',
+      }
+    }[theme];
+
+    // ---- GRADIENT SKY (fixed) ----
+    const skyGfx = this.add.graphics().setScrollFactor(0).setDepth(0);
+    const strips = 40;
+    for (let i = 0; i < strips; i++) {
+      const t = i / strips;
+      let r, g, b;
+      if (t < 0.5) {
+        const t2 = t * 2;
+        r = lerp(hexR(C.skyTop), hexR(C.skyMid), t2);
+        g = lerp(hexG(C.skyTop), hexG(C.skyMid), t2);
+        b = lerp(hexB(C.skyTop), hexB(C.skyMid), t2);
+      } else {
+        const t2 = (t - 0.5) * 2;
+        r = lerp(hexR(C.skyMid), hexR(C.skyBot), t2);
+        g = lerp(hexG(C.skyMid), hexG(C.skyBot), t2);
+        b = lerp(hexB(C.skyMid), hexB(C.skyBot), t2);
+      }
+      const col = (Math.round(r) << 16) | (Math.round(g) << 8) | Math.round(b);
+      skyGfx.fillStyle(col);
+      skyGfx.fillRect(0, i * (H / strips), W, Math.ceil(H / strips) + 1);
+    }
+
+    // ---- STARS (night only, fixed) ----
+    if (theme === 'night') {
+      const starGfx = this.add.graphics().setScrollFactor(0).setDepth(1);
+      for (let i = 0; i < 150; i++) {
+        const sx = Phaser.Math.Between(0, W);
+        const sy = Phaser.Math.Between(0, H * 0.75);
+        starGfx.fillStyle(0xffffff, Math.random() * 0.7 + 0.3);
+        starGfx.fillRect(sx, sy, Math.random() < 0.15 ? 2 : 1, Math.random() < 0.15 ? 2 : 1);
+      }
+    }
+
+    // ---- MOON / SUN (fixed) ----
+    const moonGfx = this.add.graphics().setScrollFactor(0).setDepth(2);
+    if (theme === 'night') {
+      moonGfx.fillStyle(0xffffdd);
+      moonGfx.fillCircle(W * 0.78, H * 0.18, 44);
+      moonGfx.fillStyle(C.skyMid);
+      moonGfx.fillCircle(W * 0.78 + 18, H * 0.18 - 12, 36);
+    } else {
+      moonGfx.fillStyle(0xffee00, 0.15);
+      moonGfx.fillCircle(W * 0.72, H * 0.2, 80);
+      moonGfx.fillStyle(0xffdd00, 0.3);
+      moonGfx.fillCircle(W * 0.72, H * 0.2, 60);
+      moonGfx.fillStyle(0xffcc00);
+      moonGfx.fillCircle(W * 0.72, H * 0.2, 44);
+    }
+
+    // ---- FAR BUILDINGS (fixed to camera) ----
+    const farGfx = this.add.graphics().setScrollFactor(0).setDepth(3);
+    for (let i = 0; i < 30; i++) {
+      const bx = i * 120 + Phaser.Math.Between(0, 40);
+      const bh = Phaser.Math.Between(60, 160);
+      const bw = Phaser.Math.Between(40, 90);
+      const by = GROUND_Y - bh;
+      farGfx.fillStyle(C.buildFar);
+      farGfx.fillRect(bx, by, bw, bh);
+      for (let wy = by + 8; wy < GROUND_Y - 8; wy += 18) {
+        for (let wx = bx + 6; wx < bx + bw - 6; wx += 14) {
+          if (Math.random() > 0.45) {
+            farGfx.fillStyle(C.winFar, Math.random() * 0.8 + 0.2);
+            farGfx.fillRect(wx, wy, 7, 9);
+          }
+        }
+      }
+    }
+
+    // ---- NEAR BUILDINGS (fixed to camera) ----
+    const nearGfx = this.add.graphics().setScrollFactor(0).setDepth(4);
+    for (let i = 0; i < 20; i++) {
+      const bx = i * 180 + Phaser.Math.Between(0, 60);
+      const bh = Phaser.Math.Between(100, 240);
+      const bw = Phaser.Math.Between(60, 130);
+      const by = GROUND_Y - bh;
+      nearGfx.fillStyle(C.buildNear);
+      nearGfx.fillRect(bx, by, bw, bh);
+      for (let wy = by + 12; wy < GROUND_Y - 8; wy += 22) {
+        for (let wx = bx + 8; wx < bx + bw - 8; wx += 18) {
+          if (Math.random() > 0.35) {
+            nearGfx.fillStyle(C.winNear, Math.random() * 0.9 + 0.1);
+            nearGfx.fillRect(wx, wy, 9, 12);
+          }
+        }
+      }
+    }
+
+    // ---- GROUND ----
+    const ground = this.physics.add.staticGroup();
+    for (let i = 0; i < 400; i++) {
+      const tile = this.add.rectangle(i * 200 + 100, GROUND_Y, 200, 8, C.ground).setDepth(5);
+      ground.add(tile);
+    }
+    const gDetail = this.add.graphics().setDepth(5);
+    for (let i = 0; i < 400; i++) {
+      gDetail.fillStyle(C.groundDark);
+      gDetail.fillRect(i * 200 + 10, GROUND_Y + 4, 160, 2);
+    }
+
+    // ---- SKATER ----
+    this.skater = this.add.rectangle(100, SKATER_START_Y, 40, 70, 0x000000, 0).setDepth(8);
+    this.physics.add.existing(this.skater);
+    this.skaterGfx = this.add.graphics().setDepth(9);
+    this.boardGfx  = this.add.graphics().setDepth(9);
+
+    this.physics.add.collider(this.skater, ground);
+
+    // ---- OBSTACLES ----
+    this.obstacles = this.physics.add.staticGroup();
+    this.physics.add.collider(this.skater, this.obstacles, hitObstacle, null, this);
+    this.nextObstacleX = 700;
+    this.alive = true;
+    this.obstacleColor = C.obstacle;
+
+    // ---- INPUT ----
+    this.cursors     = this.input.keyboard.createCursorKeys();
+    this.kickflipKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.K);
+    this.isFlipping  = false;
+    this.flipAngle   = 0;
+    this.onGround    = false;
+
+    // ---- HUD ----
+    this.score = 0;
+    this.scoreText = this.add.text(16, 16, 'SCORE: 0', {
+      fontSize: '16px', fill: '#ffffff', fontFamily: '"Press Start 2P"'
+    }).setScrollFactor(0).setDepth(20);
+
+    this.speedText = this.add.text(16, 44, 'SPEED: 1', {
+      fontSize: '16px', fill: C.hudColor, fontFamily: '"Press Start 2P"'
+    }).setScrollFactor(0).setDepth(20);
+
+    // ---- CAMERA ----
+    this.cameras.main.startFollow(this.skater);
+    this.cameras.main.setDeadzone(100, 200);
+  }
+
+  update() {
+    if (!this.alive) return;
+
+    const body = this.skater.body;
+    this.onGround = body.blocked.down;
+
+    const speed = 250 + Math.floor(this.score / 100) * 20;
+    body.setVelocityX(speed);
+
+    if ((this.cursors.up.isDown || this.cursors.space.isDown) && this.onGround) {
+      body.setVelocityY(-800);
+    }
+
+    if (Phaser.Input.Keyboard.JustDown(this.kickflipKey) && !this.onGround && !this.isFlipping) {
+      this.isFlipping = true;
+      this.flipAngle  = 0;
+    }
+
+    if (this.isFlipping) {
+      this.flipAngle += 20;
+      if (this.flipAngle >= 360) {
+        this.isFlipping = false;
+        this.flipAngle  = 0;
+        this.score += 50;
+      }
+    }
+
+    // spawn obstacles
+    if (this.skater.x + 500 > this.nextObstacleX) {
+      const h   = Phaser.Math.Between(30, 70);
+      const obs = this.add.rectangle(
+        this.nextObstacleX, GROUND_Y - h / 2,
+        30, h, this.obstacleColor
+      ).setDepth(7);
+      this.physics.add.existing(obs, true);
+      this.obstacles.add(obs);
+      this.nextObstacleX += Phaser.Math.Between(500, 900);
+    }
+
+    this.score += 1;
+    this.scoreText.setText('SCORE: ' + Math.floor(this.score / 10));
+    this.speedText.setText('SPEED: ' + (Math.floor(this.score / 100) + 1));
+
+    drawSkater(
+      this.skaterGfx, this.boardGfx,
+      this.skater.x,  this.skater.y,
+      this.isFlipping, this.isFlipping ? this.flipAngle : 0
+    );
+
+    if (this.cursors.down.isDown && this.onGround) {
+  body.setVelocityX(body.velocity.x * 0.95);
+  this.skaterGfx.angle = -15;
+  this.boardGfx.angle = -25;
+} else if (this.onGround) {
+  this.skaterGfx.angle = 0;
+  this.boardGfx.angle = 0;
+}
+  }
+}
+
+// ============================================================
+// DRAW SKATER
+// ============================================================
+function drawSkater(gfx, boardGfx, x, y, isCrouching, boardAngle) {
+  gfx.clear();
+  gfx.x = x;
+  gfx.y = y;
+
+  const co = isCrouching ? 15 : 0;
+
+  gfx.fillStyle(0xffffff);
+  gfx.fillRect(-12, -60 + co, 24, 30);
+
+  gfx.fillStyle(0xffd700);
+  gfx.fillCircle(0, -75 + co, 14);
+
+  gfx.fillStyle(0xffffff);
+  const ll = isCrouching ? 10 : 30;
+  gfx.fillRect(-12, -30 + co, 10, ll);
+  gfx.fillRect(2,   -30 + co, 10, ll);
+
+  boardGfx.clear();
+  boardGfx.x     = x;
+  boardGfx.y     = y;
+  boardGfx.angle = boardAngle;
+
+  boardGfx.fillStyle(0xff6600);
+  boardGfx.fillRect(-22, 0, 44, 8);
+  boardGfx.fillStyle(0x333333);
+  boardGfx.fillCircle(-14, 10, 6);
+  boardGfx.fillCircle(14,  10, 6);
+}
+
+// ============================================================
+// HIT OBSTACLE
+// ============================================================
+function hitObstacle() {
+  this.alive = false;
+  this.skater.body.setVelocityX(0);
+
+  this.add.text(W / 2, H * 0.35, 'BAILED!', {
+    fontSize: '48px', fill: '#ff0000', fontFamily: '"Press Start 2P"'
+  }).setOrigin(0.5).setScrollFactor(0).setDepth(30);
+
+  this.add.text(W / 2, H * 0.5, 'SCORE: ' + Math.floor(this.score / 10), {
+    fontSize: '24px', fill: '#ffffff', fontFamily: '"Press Start 2P"'
+  }).setOrigin(0.5).setScrollFactor(0).setDepth(30);
+
+  this.add.text(W / 2, H * 0.62, 'returning to menu...', {
+    fontSize: '14px', fill: '#aaaaaa', fontFamily: '"Press Start 2P"'
+  }).setOrigin(0.5).setScrollFactor(0).setDepth(30);
+
+  this.time.delayedCall(2500, () => this.scene.start('MenuScene'));
+}
+
+// ============================================================
+// COLOR HELPERS
+// ============================================================
+function lerp(a, b, t) { return a + (b - a) * t; }
+function hexR(h) { return (h >> 16) & 0xff; }
+function hexG(h) { return (h >> 8)  & 0xff; }
+function hexB(h) { return  h        & 0xff; }
+
+// ============================================================
+// PHASER CONFIG
+// ============================================================
+const config = {
+  type: Phaser.AUTO,
+  width:  W,
+  height: H,
+  physics: {
+    default: 'arcade',
+    arcade: { gravity: { y: 1200 }, debug: false }
+  },
+  scene: [MenuScene, GameScene]
+};
+
+const game = new Phaser.Game(config);
