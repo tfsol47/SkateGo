@@ -3,10 +3,7 @@ const H = window.innerHeight;
 
 const GROUND_Y = H - 20;
 const SKATER_START_Y = GROUND_Y - 100;
-
-// ============================================================
 // MENU SCENE
-// ============================================================
 class MenuScene extends Phaser.Scene {
   constructor() { super({ key: 'MenuScene' }); }
   preload() {}
@@ -47,9 +44,7 @@ class MenuScene extends Phaser.Scene {
   update() {}
 }
 
-// ============================================================
 // GAME SCENE
-// ============================================================
 class GameScene extends Phaser.Scene {
   constructor() { super({ key: 'GameScene' }); }
   init(data) { this.theme = data.theme || 'night'; }
@@ -283,9 +278,7 @@ class GameScene extends Phaser.Scene {
   }
 }
 
-// ============================================================
 // DRAW SKATER
-// ============================================================
 function drawSkater(gfx, boardGfx, x, y, isCrouching, boardAngle) {
   gfx.clear();
   gfx.x = x;
@@ -316,9 +309,7 @@ function drawSkater(gfx, boardGfx, x, y, isCrouching, boardAngle) {
   boardGfx.fillCircle(14,  10, 6);
 }
 
-// ============================================================
 // HIT OBSTACLE
-// ============================================================
 function hitObstacle() {
   this.alive = false;
   this.skater.body.setVelocityX(0);
@@ -338,17 +329,13 @@ function hitObstacle() {
   this.time.delayedCall(2500, () => this.scene.start('MenuScene'));
 }
 
-// ============================================================
 // COLOR HELPERS
-// ============================================================
 function lerp(a, b, t) { return a + (b - a) * t; }
 function hexR(h) { return (h >> 16) & 0xff; }
 function hexG(h) { return (h >> 8)  & 0xff; }
 function hexB(h) { return  h        & 0xff; }
 
-// ============================================================
 // PHASER CONFIG
-// ============================================================
 const config = {
   type: Phaser.AUTO,
   width:  W,
