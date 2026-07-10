@@ -9,17 +9,17 @@ class Player {
     this.body=scene.add.rectangle(x,y,40,60, 0x000000,0);
     scene.physics.add.existing(this.body);
 //REPLACE SOON
-    this.container=scene.add.container(x, y).setDepth(9).setDepth(9).setVisible(false);
+    this.container=scene.add.container(x, y).setDepth(9).setDepth(9).setVisible(true);
 
-    this.bodySprite=scene.add.rectangle(0, -45, 24, 30, 0xffffff);
-    this.headSprite = scene.add.circle(0, -62, 12, 0xffd700);
+    this.bodySprite=scene.add.rectangle(0, -25, 24, 30, 0xffffff);
+    this.headSprite = scene.add.circle(0, -45, 12, 0xffd700);
 
-    this.leftLeg=scene.add.rectangle(-6, -15, 8, 30, 0xffffff);
-    this.rightLeg=scene.add.rectangle(-6, -15, 8, 30, 0xffffff);
+    this.leftLeg=scene.add.rectangle(-6, 0, 8, 20, 0xffffff);
+    this.rightLeg=scene.add.rectangle(6, 0, 8, 20, 0xffffff);
 
-    this.boardSprite=scene.add.rectangle(0, 10, 44, 8, 0xff6600);
-    this.leftWheel=scene.add.circle(-14, 18, 5, 0x333333);
-    this.rightWheel=scene.add.circle(14, 18, 5, 0x333333);
+    this.boardSprite=scene.add.rectangle(0, 20, 44, 8, 0xff6600);
+    this.leftWheel=scene.add.circle(-14, 26, 5, 0x333333);
+    this.rightWheel=scene.add.circle(14, 26, 5, 0x333333);
 
     this.container.add([
       this.bodySprite,
@@ -50,10 +50,24 @@ class Player {
 
   }
 
-  update() {
+  update(cursors, isFlipping, flipAngle, velocityY) {
+      this.container.x=this.body.x;
+      this.container.y=this.body.y;
+
+      if (isFlipping) {
+        this.container.angle=flipAngle;
+
+      } else if (!this.onGround) {
+        this.container.angle=Phaser.Math.Clamp(velocityY * 0.04, -20, 20);
+      } else if (cursors.down.isDown) {
+        this.container.angle =8;
+      } else{
+        this.container.angle=-4;
+      }
+    }
 
   }
-}
+
 
 // MENU SCENE
 class MenuScene extends Phaser.Scene {
@@ -405,14 +419,7 @@ if (
       riderAngle = this.cursors.down.isDown ? 8 :-4;
     }
 
-    drawSkater(
-      this.skaterGfx,
-      this.boardGfx,
-      Math.round(this.skater.x),
-      Math.round(this.skater.y),
-      this.cursors.down.isDown,
-      this.isFlipping ? this.flipAngle : riderAngle
-    );
+    this.player.update(this.cursors, this.isFlipping, this.flipAngle, this.skater.body.velocity.y);
 
     this.speedLines.clear();
 
