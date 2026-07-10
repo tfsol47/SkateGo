@@ -61,6 +61,8 @@ class MenuScene extends Phaser.Scene {
   preload() {}
 
   create() {
+    console.log('GameScene create started');
+    const theme = this.theme;
     this.add.rectangle(0, 0, W, H, 0x000000).setOrigin(0, 0);
 
 
