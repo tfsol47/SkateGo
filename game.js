@@ -325,7 +325,6 @@ class GameScene extends Phaser.Scene {
     this.flipAngle   = 0;
     this.onGround    = false;
     this.wasOnGround = true;
-    this.currentTrick=null;
 
     this.coyoteTime = 100;
     this.coyoteTimer = 0;
@@ -416,12 +415,19 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
 
     if (this.isFlipping) {
       this.flipAngle += 18;
-      if (this.flipAngle >= 360) {
+      const displayAngle = this.currentTrick === 'heelflip' ? -this.flipAngle: this.flipAngle;
+      const targetAngle= this.currentTrick=== 'shoveit' ? 180:360;
+
+
+      if (this.flipAngle >= targetAngle) {
         this.isFlipping = false;
         this.flipAngle  = 0;
         this.player.resetBoardAngle();
-        this.score += 50;
+        this.score += this.currentTrick ==='shoveit' ? 40:50
+        this.currentTrick=null;
+
       }
+      this.player.update(this.cursors, this.isFlipping, displayAngle, this.skater.body.velocity.y);
     }
 
     // spawn obstacles
