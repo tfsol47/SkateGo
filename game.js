@@ -61,11 +61,14 @@ class Player {
 
       if (isFlipping) {
         this.container.angle=0;
-        this.boardContainer.angle =flipAngle;
-      } else {
-        this.boardContainer.angle=0;
-      
-      
+        this.boardContainer.scaleX =1;
+        this.boardContainer.angle=flipAngle;
+        } else{
+          this.boardContainer.angle =0;
+          this.boardContainer.scaleX=1;
+        
+       } 
+
        if (!this.onGround) {
         this.container.angle=Phaser.Math.Clamp(velocityY * 0.04, -20, 20);
       } else if (cursors.down.isDown) {
@@ -74,14 +77,13 @@ class Player {
         this.container.angle=-4;
       }
     }
-  }
+  
     
     resetBoardAngle() {
       this.boardContainer.angle =0;
     }
-
   }
-
+  
 
 // MENU SCENE
 class MenuScene extends Phaser.Scene {
@@ -426,7 +428,7 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
       const displayAngle=this.currentTrick==='heelflip' ?-this.flipAngle : this.currentTrick==='shoveit' ? 0 : this.flipAngle;
       const targetAngle= this.currentTrick=== 'shoveit' ? 180:360;
 
-      this.player.update(this.cursors, true, displayAngle, this.skater.body.velocity.y);
+      this.player.update(this.cursors, true, displayAngle, body.velocity.y, this.currentTrick);
 
       if (this.flipAngle >= targetAngle) {
         this.isFlipping = false;
@@ -436,7 +438,7 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
         this.currentTrick=null;
       }
     } else {
-      this.player.update(this.cursors, false, 0, body.velocity.y);
+      this.player.update(this.cursors, false, 0, body.velocity.y, null);
     }
 
     // spawn obstacles
