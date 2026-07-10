@@ -49,6 +49,7 @@ class Player {
   
 
   }
+  
 
   update(cursors, isFlipping, flipAngle, velocityY) {
       this.container.x=Math.round(this.body.x);
@@ -72,6 +73,11 @@ class Player {
       } else{
         this.container.angle=-4;
       }
+    }
+    resetBoardAngle() {
+      this.boardSprite.angle=0;
+      this.leftWheel.angle=0;
+      this.rightWheel.angle=0;
     }
 
   }
@@ -399,10 +405,11 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
     }
 
     if (this.isFlipping) {
-      this.flipAngle += 20;
+      this.flipAngle += 18;
       if (this.flipAngle >= 360) {
         this.isFlipping = false;
         this.flipAngle  = 0;
+        this.player.resetBoardAngle();
         this.score += 50;
       }
     }
