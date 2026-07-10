@@ -16,12 +16,22 @@ class Player {
     this.wasOnGround=false;
     this.isFlipping=false;
     this.flipAngle=0;
+
+    this.coyoteTime=180;
+    this.coyoteTimer=0;
+
+    this.jumpForce=800;
+
+    this.speed=250;
+
+    this.isGrinding=false;
+    this.combo=0;
   
 
   }
 
   update() {
-    
+
   }
 }
 
@@ -205,9 +215,8 @@ class GameScene extends Phaser.Scene {
       gDetail.fillRect(i * 200 + 10, GROUND_Y + 4, 160, 2);
     }
 
-    // ---- SKATER ----
-    this.skater = this.add.rectangle(100, SKATER_START_Y, 40, 70, 0x000000, 0).setDepth(8);
-    this.physics.add.existing(this.skater);
+    // ---- SKATER (still thinking of name)----
+    this.player =new Player(this, 100, SKATER_START_Y);
     this.speedLines = this.add.graphics().setDepth(6);
 
     this.dust = this.add.particles(0, 0, '__WHITE',{
