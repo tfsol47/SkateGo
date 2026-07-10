@@ -9,7 +9,7 @@ class Player {
     this.body=scene.add.rectangle(x,y,40,0x000000,0);
     scene.physics.add.existing(this.body);
 //REPLACE SOON
-    this.container=scene.add.container(x, y).setDepth(9);
+    this.container=scene.add.container(x, y).setDepth(9).setDepth(9).setVisible(false);
 
     this.bodySprite=scene.add.rectangle(0, -45, 24, 30, 0xffffff);
     this.headSprite = scene.add.circle(0, -62, 12, 0xffd700);
