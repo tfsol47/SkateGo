@@ -51,13 +51,21 @@ class Player {
   }
 
   update(cursors, isFlipping, flipAngle, velocityY) {
-      this.container.x=this.body.x;
-      this.container.y=this.body.y;
+      this.container.x=Math.round(this.body.x);
+      this.container.y=Math.round(this.body.y);
 
       if (isFlipping) {
-        this.container.angle=flipAngle;
-
-      } else if (!this.onGround) {
+        this.container.angle=0;
+        this.boardSprite.angle =flipAngle;
+        this.leftWheel.angle=flipAngle;
+        this.rightWheel.angle =flipAngle;
+      } else {
+        this.boardSprite.angle=0;
+        this.leftWheel.angle=0;
+        this.rightWheel.angle=0;
+      }
+      
+       if (!this.onGround) {
         this.container.angle=Phaser.Math.Clamp(velocityY * 0.04, -20, 20);
       } else if (cursors.down.isDown) {
         this.container.angle =8;
@@ -438,7 +446,6 @@ if (
 
       }
     }
-    console.log(this.skater.x, this.skater.body.x);
 
   }
 }
@@ -476,7 +483,7 @@ function drawSkater(gfx, boardGfx, x, y, isCrouching, boardAngle) {
 }
 
 
-// HIT OBSTACLE
+// HIT OBSTACLE (change in future)
 function hitObstacle() {
   this.alive = false;
   this.skater.body.setVelocityX(0);
@@ -505,8 +512,11 @@ function hexB(h) { return  h        & 0xff; }
 // PHASER CONFIG
 const config = {
   type: Phaser.AUTO,
-  width:  W,
-  height: H,
+  width:  window.innerWidth,
+  height: window.innerHeight,
+ // zoom: Math.floor(Math.min(window.innerWidth / 480, window.innerHeight / 270)),
+  pixelArt:true,
+  roundPixels: true,
   physics: {
     default: 'arcade',
     arcade: { gravity: { y: 1500 }, debug: false }
