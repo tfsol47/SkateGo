@@ -320,7 +320,7 @@ class GameScene extends Phaser.Scene {
     this.cursors     = this.input.keyboard.createCursorKeys();
     this.kickflipKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.K);
     this.heelflipKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.H);
-    this.shoveitKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.J);
+    this.shoveitKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S);
     this.isFlipping  = false;
     this.flipAngle   = 0;
     this.onGround    = false;
@@ -355,7 +355,7 @@ class GameScene extends Phaser.Scene {
       this.dust.explode(20, this.skater.x, this.skater.y + 30);
 
       this.tweens.add({
-        targets: [this.skaterGfx, this.boardGfx],
+        targets: [this.player.container],
         scaleY: 0.7,
         scaleX: 1.3,
         duration: 80,
@@ -364,7 +364,7 @@ class GameScene extends Phaser.Scene {
       });
     }
 
-    this.wasOnGround = this.onGround
+    this.wasOnGround = this.onGround;
 
     if (this.onGround) {
       this.coyoteTimer = this.coyoteTime;
@@ -402,12 +402,20 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
 }
 
     if (!this.onGround && !this.isFlipping) {
-      if (Phaser.Input.Keyboard.JustDown(this.kickflipKey)){
-      this.isFlipping = true;
-      this.flipAngle  = 0;
-      this.currentTrick= 'kickflip';
-    }else if (Phaser.Input.Keyboard.JustDown(this.heelflipKey)){
-      this.isFlipping =true;
+      const kickJust= Phaser.Input.Keyboard.JustDown(this.kickflipKey);
+      const heelJust= Phaser.Input.Keyboard.JustDown(this.heelflipKey);
+      const shoveitJust= Phaser.Input.Keyboard.JustDown(this.shoveitKey);
+
+      if (kickJust){
+        this.isFlipping=true;
+        this.flipAngle=0;
+        this.currentTrick='kickflip';
+      } else if (heelJust) {
+        this.isFlipping=true;
+        this.flipAngle=0;
+        this.currentTrick='heelflip';
+      } else if (shoveitJust) {
+      this.isFlipping=true;
       this.flipAngle=0;
       this.currentTrick='shoveit';
     }
@@ -415,13 +423,10 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
 
     if (this.isFlipping) {
       this.flipAngle += 18;
-
-      const displayAngle = this.currentTrick === 'heelflip' ? -this.flipAngle:
-      this.currentTrick==='shoveit' ? 0 : this.flipAngle;
-
-      const rotateY=this.currentTrick==='shoveit' ? this.flipAngle : 0;
+      const displayAngle=this.currentTrick==='heelflip' ?-this.flipAngle : this.currentTrick==='shoveit' ? 0 : this.flipAngle;
       const targetAngle= this.currentTrick=== 'shoveit' ? 180:360;
 
+      this.player.update(this.cursors, true, displayAngle, this.skater.body.velocity.y);
 
       if (this.flipAngle >= targetAngle) {
         this.isFlipping = false;
@@ -429,16 +434,14 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
         this.player.resetBoardAngle();
         this.score += this.currentTrick ==='shoveit' ? 40:50;
         this.currentTrick=null;
-
       }
-      if (!this.isFlipping) {
-        this.player.update(this.cursors, false, 0, this.skater.body.velocity.y);
-      }
+    } else {
+      this.player.update(this.cursors, false, 0, body.velocity.y);
     }
 
     // spawn obstacles
     if (this.skater.x + 500 > this.nextObstacleX) {
-      const h   = Phaser.Math.Between(30, 70);
+      const h = Phaser.Math.Between(30, 70);
       const obs = this.add.rectangle(
         this.nextObstacleX, GROUND_Y - h / 2,
         30, h, this.obstacleColor
@@ -453,7 +456,6 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
     this.speedText.setText('SPEED: ' + (Math.floor(this.score / 100) + 1));
 
 
-    this.player.update(this.cursors, this.isFlipping, this.flipAngle, this.skater.body.velocity.y);
 
     this.speedLines.clear();
 
@@ -472,10 +474,8 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
 
       }
     }
-
   }
 }
-
 // DRAW SKATER
 function drawSkater(gfx, boardGfx, x, y, isCrouching, boardAngle) {
   gfx.clear();
