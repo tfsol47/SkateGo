@@ -1,8 +1,8 @@
 const W = window.innerWidth;
 const H = window.innerHeight;
 
-const GROUND_Y = H - 20;
-const SKATER_START_Y = GROUND_Y - 100;
+const GROUND_Y = H - 80;
+const SKATER_START_Y = GROUND_Y - 35;
 // MENU SCENE
 class MenuScene extends Phaser.Scene {
   constructor() { super({ key: 'MenuScene' }); }
@@ -16,7 +16,7 @@ class MenuScene extends Phaser.Scene {
     }).setOrigin(0.5);
 
     this.add.text(W / 2, H * 0.35, 'CHOOSE YOUR CITY', {
-      fontSize: '20px', fill: '#aaaaaa', fontFamily: '"Press Start 2P"'
+      fontSize: '20px', fill: '#a1a1a1', fontFamily: '"Press Start 2P"'
     }).setOrigin(0.5);
 
     const nightBtn = this.add.rectangle(W / 2 - 200, H * 0.55, 320, 80, 0x1a1a2e).setInteractive();
@@ -36,7 +36,7 @@ class MenuScene extends Phaser.Scene {
     nightBtn.on('pointerdown',  () => this.scene.start('GameScene', { theme: 'night' }));
     sunsetBtn.on('pointerdown', () => this.scene.start('GameScene', { theme: 'sunset' }));
 
-    this.add.text(W / 2, H * 0.8, 'SPACE / UP = JUMP          K = KICKFLIP', {
+    this.add.text(W / 2, H * 0.8, 'SPACE / ARROW UP = JUMP          K = KICKFLIP\n ARROW DOWN = POWERSLIDE', {
       fontSize: '12px', fill: '#555555', fontFamily: '"Press Start 2P"'
     }).setOrigin(0.5);
   }
@@ -104,7 +104,7 @@ class GameScene extends Phaser.Scene {
       skyGfx.fillRect(0, i * (H / strips), W, Math.ceil(H / strips) + 1);
     }
 
-    // ---- STARS (night only, fixed) ----
+    // ---- STARS (night only) ----
     if (theme === 'night') {
       const starGfx = this.add.graphics().setScrollFactor(0).setDepth(1);
       for (let i = 0; i < 150; i++) {
@@ -115,7 +115,8 @@ class GameScene extends Phaser.Scene {
       }
     }
 
-    // ---- MOON / SUN (fixed) ----
+    
+    // ---- MOON / SUN ----
     const moonGfx = this.add.graphics().setScrollFactor(0).setDepth(2);
     if (theme === 'night') {
       moonGfx.fillStyle(0xffffdd);
@@ -224,8 +225,15 @@ class GameScene extends Phaser.Scene {
     const body = this.skater.body;
     this.onGround = body.blocked.down;
 
-    const speed = 250 + Math.floor(this.score / 100) * 20;
-    body.setVelocityX(speed);
+    const baseSpeed = 250 + Math.floor(this.score / 100) * 20;
+
+if (this.cursors.down.isDown && this.onGround) {
+  this.skateSpeed = Math.max(80, (this.skateSpeed || baseSpeed) * 0.97);
+} else {
+  this.skateSpeed = baseSpeed;
+}
+
+body.setVelocityX(this.skateSpeed);
 
     if ((this.cursors.up.isDown || this.cursors.space.isDown) && this.onGround) {
       body.setVelocityY(-800);
@@ -267,14 +275,6 @@ class GameScene extends Phaser.Scene {
       this.isFlipping, this.isFlipping ? this.flipAngle : 0
     );
 
-    if (this.cursors.down.isDown && this.onGround) {
-  body.setVelocityX(body.velocity.x * 0.95);
-  this.skaterGfx.angle = -15;
-  this.boardGfx.angle = -25;
-} else if (this.onGround) {
-  this.skaterGfx.angle = 0;
-  this.boardGfx.angle = 0;
-}
   }
 }
 
@@ -309,12 +309,13 @@ function drawSkater(gfx, boardGfx, x, y, isCrouching, boardAngle) {
   boardGfx.fillCircle(14,  10, 6);
 }
 
+
 // HIT OBSTACLE
 function hitObstacle() {
   this.alive = false;
   this.skater.body.setVelocityX(0);
 
-  this.add.text(W / 2, H * 0.35, 'BAILED!', {
+  this.add.text(W / 2, H * 0.35, 'FAILED!', {
     fontSize: '48px', fill: '#ff0000', fontFamily: '"Press Start 2P"'
   }).setOrigin(0.5).setScrollFactor(0).setDepth(30);
 
@@ -342,7 +343,7 @@ const config = {
   height: H,
   physics: {
     default: 'arcade',
-    arcade: { gravity: { y: 1200 }, debug: false }
+    arcade: { gravity: { y: 1500 }, debug: false }
   },
   scene: [MenuScene, GameScene]
 };
