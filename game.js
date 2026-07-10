@@ -243,7 +243,7 @@ class GameScene extends Phaser.Scene {
       });
     }
 
-    this.wasOnGround = this.onGround;
+    this.wasOnGround = this.onGround
 
     if (this.onGround) {
       this.coyoteTimer = this.coyoteTime;
