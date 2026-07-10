@@ -3,6 +3,28 @@ const H = window.innerHeight;
 
 const GROUND_Y = H - 80;
 const SKATER_START_Y = GROUND_Y - 35;
+class Player {
+  constructor(scene, x, y) {
+    this.scene = scene;
+    this.body=scene.add.rectangle(x,y,40,0x000000,0);
+    scene.physics.add.existing(this.body);
+//REPLACE SOON
+    this.graphics =scene.add.graphics(),setDepth(9);
+    this.board=scene.add.graphics().setDepth(9);
+
+    this.onGround=false;
+    this.wasOnGround=false;
+    this.isFlipping=false;
+    this.flipAngle=0;
+  
+
+  }
+
+  update() {
+    
+  }
+}
+
 // MENU SCENE
 class MenuScene extends Phaser.Scene {
   constructor() { super({ key: 'MenuScene' }); }
