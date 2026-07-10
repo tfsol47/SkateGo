@@ -364,10 +364,10 @@ class GameScene extends Phaser.Scene {
       this.coyoteTimer -= this.game.loop.delta;
     }
 
-    const baseSpeed = 250 + Math.floor(this.score / 100) * 20;
+    const baseSpeed = Math.min(250 + Math.floor(this.score / 100) * 15, 600);
 
 if (this.cursors.down.isDown && this.onGround) {
-  this.skateSpeed = Math.max(80, (this.skateSpeed || baseSpeed) * 0.97);
+  this.skateSpeed = Math.max(80, (this.skateSpeed || baseSpeed) * 0.985);
 } else {
   this.skateSpeed = baseSpeed;
 }
