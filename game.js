@@ -9,8 +9,28 @@ class Player {
     this.body=scene.add.rectangle(x,y,40,0x000000,0);
     scene.physics.add.existing(this.body);
 //REPLACE SOON
-    this.graphics =scene.add.graphics(),setDepth(9);
-    this.board=scene.add.graphics().setDepth(9);
+    this.container=scene.add.container(x, y).setDepth(9);
+
+    this.bodySprite=scene.add.rectangle(0, -45, 24, 30, 0xffffff);
+    this.headSprite = scene.add.circle(0, -62, 12, 0xffd700);
+
+    this.leftLeg=scene.add.rectangle(-6, -15, 8, 30, 0xffffff);
+    this.rightLeg=scene.add.rectangle(-6, -15, 8, 30, 0xffffff);
+
+    this.boardSprite=scene.add.rectangle(0, 10, 44, 8, 0xff6600);
+    this.leftWheel=scene.add.circle(-14, 18, 5, 0x333333);
+    this.rightWheel=scene.add.circle(14, 18, 5, 0x333333);
+
+    this.container.add([
+      this.bodySprite,
+      this.headSprite,
+      this.leftLeg,
+      this.rightLeg,
+      this.boardSprite,
+      this.leftWheel,
+      this.rightWheel
+    ]);
+    
 
     this.onGround=false;
     this.wasOnGround=false;
@@ -217,9 +237,21 @@ class GameScene extends Phaser.Scene {
 
     // ---- SKATER (still thinking of name)----
     this.player =new Player(this, 100, SKATER_START_Y);
+    this.skater=this.player.body;
+    this.skaterGfx = this.add.graphics().setDepth(9);
+    this.boardGfx=this.add.graphics().setDepth(9);
     this.speedLines = this.add.graphics().setDepth(6);
 
-    this.dust = this.add.particles(0, 0, '__WHITE',{
+
+
+    const px=this.make.graphics({x:0, y:0, add:false});
+    px.fillStyle(0xffffff);
+    px.fillRect(0, 0, 4, 4);
+    px.generateTexture('white_particle', 4, 4);
+    px.destroy();
+    
+    
+    this.dust = this.add.particles(0, 0, 'white_particle',{
       speed: {min: 80, max:220 },
       angle: {min:150, max:210},
       lifespan:500,
@@ -382,7 +414,7 @@ if (
 
     this.speedLines.clear();
 
-    if(this.skatespeed >280) {
+    if(this.skatespeed > 280) {
       for (let i=0; i <12; i++){
 
         const x =this.skater.x - Phaser.Math.Between(50, 350);
@@ -404,7 +436,7 @@ if (
 
 // DRAW SKATER
 function drawSkater(gfx, boardGfx, x, y, isCrouching, boardAngle) {
-  //gfx.clear();
+  gfx.clear();
   gfx.setPosition(Math.round(x), Math.round(y));
   boardGfx.setPosition(Math.round(x), Math.round(y));
   gfx.rotation= Phaser.Math.DegToRad(boardAngle * 0.25);
@@ -422,7 +454,7 @@ function drawSkater(gfx, boardGfx, x, y, isCrouching, boardAngle) {
   gfx.fillRect(-12, -30 + co, 10, ll);
   gfx.fillRect(2,   -30 + co, 10, ll);
 
-  //boardGfx.clear();
+  boardGfx.clear();
   boardGfx.x     = x;
   boardGfx.y     = y;
   boardGfx.angle = boardAngle;
