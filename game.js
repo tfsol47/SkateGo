@@ -319,10 +319,13 @@ class GameScene extends Phaser.Scene {
     // ---- INPUT ----
     this.cursors     = this.input.keyboard.createCursorKeys();
     this.kickflipKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.K);
+    this.heelflipKey = this.input.keyboard.addkey(Phaser.Input.Keyboard.KeyCodes.H);
+    this.shoveitKey = this.input.keyboard.addkey(Phaser.Input.Keyboard.KeyCodes.J);
     this.isFlipping  = false;
     this.flipAngle   = 0;
     this.onGround    = false;
     this.wasOnGround = true;
+    this.currentTrick=null;
 
     this.coyoteTime = 100;
     this.coyoteTimer = 0;
@@ -399,10 +402,17 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
     body.setVelocityY(body.velocity.y * 1.04);
 }
 
-    if (Phaser.Input.Keyboard.JustDown(this.kickflipKey) && !this.onGround && !this.isFlipping) {
+    if (!this.onGround && !this.isFlipping) {
+      if (Phaser.Input.Keyboard.JustDown(this.kickflipKey)){
       this.isFlipping = true;
       this.flipAngle  = 0;
+      this.currentTrick= 'kickflip';
+    }else if (Phaser.Input.Keyboard.JustDown(this.heelflipKey)){
+      this.isFlipping =true;
+      this.flipAngle=0;
+      this.currentTrick='shoveit';
     }
+  }
 
     if (this.isFlipping) {
       this.flipAngle += 18;
