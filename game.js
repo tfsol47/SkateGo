@@ -415,7 +415,11 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
 
     if (this.isFlipping) {
       this.flipAngle += 18;
-      const displayAngle = this.currentTrick === 'heelflip' ? -this.flipAngle: this.flipAngle;
+
+      const displayAngle = this.currentTrick === 'heelflip' ? -this.flipAngle:
+      this.currentTrick==='shoveit' ? 0 : this.flipAngle;
+
+      const rotateY=this.currentTrick==='shoveit' ? this.flipAngle : 0;
       const targetAngle= this.currentTrick=== 'shoveit' ? 180:360;
 
 
@@ -423,11 +427,13 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
         this.isFlipping = false;
         this.flipAngle  = 0;
         this.player.resetBoardAngle();
-        this.score += this.currentTrick ==='shoveit' ? 40:50
+        this.score += this.currentTrick ==='shoveit' ? 40:50;
         this.currentTrick=null;
 
       }
-      this.player.update(this.cursors, this.isFlipping, displayAngle, this.skater.body.velocity.y);
+      if (!this.isFlipping) {
+        this.player.update(this.cursors, false, 0, this.skater.body.velocity.y);
+      }
     }
 
     // spawn obstacles
