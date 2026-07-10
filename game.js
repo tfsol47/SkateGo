@@ -287,7 +287,7 @@ class GameScene extends Phaser.Scene {
       scale: {start: 1.2, end: 0},
       alpha: {start: 0.9, end: 0}
 
-    });
+    }).setDepth(10);
 
     this.physics.add.collider(this.skater, ground);
 
@@ -343,14 +343,14 @@ class GameScene extends Phaser.Scene {
     this.onGround = body.blocked.down;
 
     if (!this.wasOnGround && this.onGround) {
-      this.cameras.main.shake(80, 0.004);
-      this.dust.explode(25, this.skater.x, GROUND_Y - 6)
+      this.cameras.main.shake(60, 0.003);
+      this.dust.explode(20, this.skater.x, GROUND_Y - 6)
 
       this.tweens.add({
         targets: [this.skaterGfx, this.boardGfx],
-        scaleY: 0.85,
-        scaleX: 1.15,
-        duration: 60,
+        scaleY: 0.7,
+        scaleX: 1.3,
+        duration: 80,
         yoyo: true,
         ease: 'Quad.easeOut'
       });
