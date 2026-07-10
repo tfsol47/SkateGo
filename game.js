@@ -210,7 +210,7 @@ class GameScene extends Phaser.Scene {
     }
 
     // ---- FAR BUILDINGS (fixed to camera) ----
-    const farGfx = this.add.graphics().setScrollFactor(0).setDepth(3);
+    const farGfx = this.add.graphics().setScrollFactor(0.1).setDepth(3);
     for (let i = 0; i < 30; i++) {
       const bx = i * 120 + Phaser.Math.Between(0, 40);
       const bh = Phaser.Math.Between(60, 160);
@@ -229,7 +229,7 @@ class GameScene extends Phaser.Scene {
     }
 
     // ---- NEAR BUILDINGS (fixed to camera) ----
-    const nearGfx = this.add.graphics().setScrollFactor(0).setDepth(4);
+    const nearGfx = this.add.graphics().setScrollFactor(0.3).setDepth(4);
     for (let i = 0; i < 20; i++) {
       const bx = i * 180 + Phaser.Math.Between(0, 60);
       const bh = Phaser.Math.Between(100, 240);
@@ -483,7 +483,7 @@ function drawSkater(gfx, boardGfx, x, y, isCrouching, boardAngle) {
 }
 
 
-// HIT OBSTACLE (change in future)
+// HIT OBSTACLE (change in the future)
 function hitObstacle() {
   this.alive = false;
   this.skater.body.setVelocityX(0);
