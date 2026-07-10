@@ -344,7 +344,7 @@ class GameScene extends Phaser.Scene {
 
     if (!this.wasOnGround && this.onGround) {
       this.cameras.main.shake(60, 0.003);
-      this.dust.explode(20, this.skater.x, GROUND_Y - 6)
+      this.dust.explode(20, this.skater.x, this.skater.y + 30);
 
       this.tweens.add({
         targets: [this.skaterGfx, this.boardGfx],
