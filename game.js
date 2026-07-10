@@ -6,7 +6,7 @@ const SKATER_START_Y = GROUND_Y - 35;
 class Player {
   constructor(scene, x, y) {
     this.scene = scene;
-    this.body=scene.add.rectangle(x,y,40,0x000000,0);
+    this.body=scene.add.rectangle(x,y,40,60, 0x000000,0);
     scene.physics.add.existing(this.body);
 //REPLACE SOON
     this.container=scene.add.container(x, y).setDepth(9).setDepth(9).setVisible(false);
@@ -408,8 +408,8 @@ if (
     drawSkater(
       this.skaterGfx,
       this.boardGfx,
-      this.skater.x,
-      this.skater.y,
+      Math.round(this.skater.x),
+      Math.round(this.skater.y),
       this.cursors.down.isDown,
       this.isFlipping ? this.flipAngle : riderAngle
     );
