@@ -211,13 +211,15 @@ class GameScene extends Phaser.Scene {
 
     // ---- FAR BUILDINGS (fixed to camera) ----
     const farGfx = this.add.graphics().setScrollFactor(0.1).setDepth(3);
+    farGfx.fillStyle(C.buildFar);
+    farGfx.fillRect(0, GROUND_Y - 10, W * 4, 10);
     for (let i = 0; i < 30; i++) {
       const bx = i * 120 + Phaser.Math.Between(0, 40);
       const bh = Phaser.Math.Between(60, 160);
       const bw = Phaser.Math.Between(40, 90);
       const by = GROUND_Y - bh;
       farGfx.fillStyle(C.buildFar);
-      farGfx.fillRect(0, GROUND_Y - 10, W * 4, 10);
+      farGfx.fillRect(bx, by, bw, bh);
       for (let wy = by + 8; wy < GROUND_Y - 8; wy += 18) {
         for (let wx = bx + 6; wx < bx + bw - 6; wx += 14) {
           if (Math.random() > 0.45) {
@@ -230,13 +232,16 @@ class GameScene extends Phaser.Scene {
 
     // ---- NEAR BUILDINGS (fixed to camera) ----
     const nearGfx = this.add.graphics().setScrollFactor(0.3).setDepth(4);
+    nearGfx.fillStyle(C.buildNear);
+    nearGfx.fillRect(0, GROUND_Y - 6, W * 4, 6);
     for (let i = 0; i < 20; i++) {
       const bx = i * 180 + Phaser.Math.Between(0, 60);
       const bh = Phaser.Math.Between(100, 240);
       const bw = Phaser.Math.Between(60, 130);
       const by = GROUND_Y - bh;
       nearGfx.fillStyle(C.buildNear);
-      nearGfx.fillRect(0, GROUND_Y - 6, W * 4, 6);
+      nearGfx.fillRect(bx, by, bw, bh);
+      for (let i = 0; i < 20; i++)
       for (let wy = by + 12; wy < GROUND_Y - 8; wy += 22) {
         for (let wx = bx + 8; wx < bx + bw - 8; wx += 18) {
           if (Math.random() > 0.35) {
