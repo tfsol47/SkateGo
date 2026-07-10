@@ -309,10 +309,19 @@ if (
     this.scoreText.setText('SCORE: ' + Math.floor(this.score / 10));
     this.speedText.setText('SPEED: ' + (Math.floor(this.score / 100) + 1));
 
+    let riderAngle= 0;
+
+    if (!this.onGround) {
+      riderAngle = Phaser.Math.Clamp(body.velocity.y * 0.04, -20, 20);
+
+    } else {
+      riderAngle = this.cursors.down.isDown ? 8 :-4;
+    }
+
     drawSkater(
       this.skaterGfx, this.boardGfx,
       this.skater.x,  this.skater.y,
-      this.isFlipping, this.isFlipping ? this.flipAngle : 0
+      this.isFlipping ? this.flipAngle : riderAngle
     );
 
   }
@@ -323,6 +332,7 @@ function drawSkater(gfx, boardGfx, x, y, isCrouching, boardAngle) {
   gfx.clear();
   gfx.x = x;
   gfx.y = y;
+  gfx.rotation= Phaser.Math.DegToRad(boardAngle * 0.25);
 
   const co = isCrouching ? 15 : 0;
 
