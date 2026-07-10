@@ -188,6 +188,17 @@ class GameScene extends Phaser.Scene {
     this.physics.add.existing(this.skater);
     this.skaterGfx = this.add.graphics().setDepth(9);
     this.boardGfx  = this.add.graphics().setDepth(9);
+    this.speedLines = this.add.graphics().setDepth(6);
+
+    this.dust = this.add.particles(0, 0, '__WHITE',{
+      speed: {min: 80, max:220 },
+      angle: {min:150, max:210},
+      lifespan:500,
+      quantity: 0,
+      scale: {start: 1.2, end: 0},
+      alpha: {start: 0.9, end: 0}
+
+    });
 
     this.physics.add.collider(this.skater, ground);
 
@@ -197,6 +208,18 @@ class GameScene extends Phaser.Scene {
     this.nextObstacleX = 700;
     this.alive = true;
     this.obstacleColor = C.obstacle;
+    this.rails = this.physics.add.staticGroup();
+
+    const rail = this.add.rectangle(
+      900,
+      GROUND_Y - 90,
+      220,
+      8,
+      0x888888
+    ).setDepth(7);
+
+    this.physics.add.existing(rail, true);
+    this.rails.add(rail);
 
     // ---- INPUT ----
     this.cursors     = this.input.keyboard.createCursorKeys();
@@ -220,7 +243,8 @@ class GameScene extends Phaser.Scene {
     }).setScrollFactor(0).setDepth(20);
 
     // ---- CAMERA ----
-    this.cameras.main.startFollow(this.skater);
+    this.cameras.main.startFollow(this.skater, true, 0.15, 0.15);
+    this.cameras.main.roundPixels = true;
     this.cameras.main.setDeadzone(100, 200);
   }
 
@@ -232,6 +256,7 @@ class GameScene extends Phaser.Scene {
 
     if (!this.wasOnGround && this.onGround) {
       this.cameras.main.shake(80, 0.004);
+      this.dust.explode(25, this.skater.x, GROUND_Y - 6)
 
       this.tweens.add({
         targets: [this.skaterGfx, this.boardGfx],
@@ -239,7 +264,7 @@ class GameScene extends Phaser.Scene {
         scaleX: 1.15,
         duration: 60,
         yoyo: true,
-        ease: 'Quad.easeout'
+        ease: 'Quad.easeOut'
       });
     }
 
@@ -319,10 +344,31 @@ if (
     }
 
     drawSkater(
-      this.skaterGfx, this.boardGfx,
-      this.skater.x,  this.skater.y,
+      this.skaterGfx,
+      this.boardGfx,
+      this.skater.x,
+      this.skater.y,
+      this.cursors.down.isDown,
       this.isFlipping ? this.flipAngle : riderAngle
     );
+
+    this.speedLines.clear();
+
+    if(this.skatespeed >280) {
+      for (let i=0; i <12; i++){
+
+        const x =this.skater.x - Phaser.Math.Between(50, 350);
+        const y =this.skater.y - Phaser.Math.Between(-80, 40);
+        const len = Phaser.Math.Between(20, 60);
+
+        this.speedLines.lineStyle(2, 0xffffff, 0.35);
+        this.speedLines.beginPath();
+        this.speedLines.moveTo(x, y);
+        this.speedLines.lineTo(x - len, y);
+        this.speedLines.strokePath();
+
+      }
+    }
 
   }
 }
