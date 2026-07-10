@@ -186,8 +186,6 @@ class GameScene extends Phaser.Scene {
     // ---- SKATER ----
     this.skater = this.add.rectangle(100, SKATER_START_Y, 40, 70, 0x000000, 0).setDepth(8);
     this.physics.add.existing(this.skater);
-    this.skaterGfx = this.add.graphics().setDepth(9);
-    this.boardGfx  = this.add.graphics().setDepth(9);
     this.speedLines = this.add.graphics().setDepth(6);
 
     this.dust = this.add.particles(0, 0, '__WHITE',{
@@ -243,9 +241,8 @@ class GameScene extends Phaser.Scene {
     }).setScrollFactor(0).setDepth(20);
 
     // ---- CAMERA ----
-    this.cameras.main.startFollow(this.skater, true, 0.15, 0.15);
-    this.cameras.main.roundPixels = true;
-    this.cameras.main.setDeadzone(100, 200);
+    this.cameras.main.startFollow(this.skater, true, 1, 1);
+    this.cameras.main.setFollowOffset(-W * 0.18, 0);
   }
 
   update() {
@@ -369,15 +366,16 @@ if (
 
       }
     }
+    console.log(this.skater.x, this.skater.body.x);
 
   }
 }
 
 // DRAW SKATER
 function drawSkater(gfx, boardGfx, x, y, isCrouching, boardAngle) {
-  gfx.clear();
-  gfx.x = x;
-  gfx.y = y;
+  //gfx.clear();
+  gfx.setPosition(Math.round(x), Math.round(y));
+  boardGfx.setPosition(Math.round(x), Math.round(y));
   gfx.rotation= Phaser.Math.DegToRad(boardAngle * 0.25);
 
   const co = isCrouching ? 15 : 0;
@@ -393,7 +391,7 @@ function drawSkater(gfx, boardGfx, x, y, isCrouching, boardAngle) {
   gfx.fillRect(-12, -30 + co, 10, ll);
   gfx.fillRect(2,   -30 + co, 10, ll);
 
-  boardGfx.clear();
+  //boardGfx.clear();
   boardGfx.x     = x;
   boardGfx.y     = y;
   boardGfx.angle = boardAngle;
