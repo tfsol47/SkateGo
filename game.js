@@ -319,8 +319,8 @@ class GameScene extends Phaser.Scene {
     // ---- INPUT ----
     this.cursors     = this.input.keyboard.createCursorKeys();
     this.kickflipKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.K);
-    this.heelflipKey = this.input.keyboard.addkey(Phaser.Input.Keyboard.KeyCodes.H);
-    this.shoveitKey = this.input.keyboard.addkey(Phaser.Input.Keyboard.KeyCodes.J);
+    this.heelflipKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.H);
+    this.shoveitKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.J);
     this.isFlipping  = false;
     this.flipAngle   = 0;
     this.onGround    = false;
