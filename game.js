@@ -381,16 +381,17 @@ if (
      Phaser.Input.Keyboard.JustDown(this.cursors.space)) &&
     this.coyoteTimer > 0
 ) {
-    body.setVelocityY(-800);
+    body.setVelocityY(-750);
     this.coyoteTimer = 0;
 }
 
 // Cut the jump short if the player lets go early
-if (
-    body.velocity.y < 0 &&
-    !(this.cursors.up.isDown || this.cursors.space.isDown)
-) {
-    body.setVelocityY(body.velocity.y * 0.6);
+if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown)) {
+  body.setVelocityY(body.velocity.y *0.6);
+}
+
+  if (body.velocity.y >0) {
+    body.setVelocityY(body.velocity.y * 1.04);
 }
 
     if (Phaser.Input.Keyboard.JustDown(this.kickflipKey) && !this.onGround && !this.isFlipping) {
@@ -423,14 +424,6 @@ if (
     this.scoreText.setText('SCORE: ' + Math.floor(this.score / 10));
     this.speedText.setText('SPEED: ' + (Math.floor(this.score / 100) + 1));
 
-    let riderAngle= 0;
-
-    if (!this.onGround) {
-      riderAngle = Phaser.Math.Clamp(body.velocity.y * 0.04, -20, 20);
-
-    } else {
-      riderAngle = this.cursors.down.isDown ? 8 :-4;
-    }
 
     this.player.update(this.cursors, this.isFlipping, this.flipAngle, this.skater.body.velocity.y);
 
