@@ -217,7 +217,7 @@ class GameScene extends Phaser.Scene {
       const bw = Phaser.Math.Between(40, 90);
       const by = GROUND_Y - bh;
       farGfx.fillStyle(C.buildFar);
-      farGfx.fillRect(bx, by, bw, bh);
+      farGfx.fillRect(0, GROUND_Y - 10, W * 4, 10);
       for (let wy = by + 8; wy < GROUND_Y - 8; wy += 18) {
         for (let wx = bx + 6; wx < bx + bw - 6; wx += 14) {
           if (Math.random() > 0.45) {
@@ -236,7 +236,7 @@ class GameScene extends Phaser.Scene {
       const bw = Phaser.Math.Between(60, 130);
       const by = GROUND_Y - bh;
       nearGfx.fillStyle(C.buildNear);
-      nearGfx.fillRect(bx, by, bw, bh);
+      nearGfx.fillRect(0, GROUND_Y - 6, W * 4, 6);
       for (let wy = by + 12; wy < GROUND_Y - 8; wy += 22) {
         for (let wx = bx + 8; wx < bx + bw - 8; wx += 18) {
           if (Math.random() > 0.35) {
