@@ -320,7 +320,7 @@ class GameScene extends Phaser.Scene {
     }).setScrollFactor(0).setDepth(20);
 
     // ---- CAMERA ----
-    this.cameras.main.startFollow(this.skater, true, 1, 1);
+    this.cameras.main.startFollow(this.skater, true, 0.1, 0.1);
     this.cameras.main.setFollowOffset(-W * 0.18, 0);
   }
 
