@@ -17,18 +17,22 @@ class Player {
     this.leftLeg=scene.add.rectangle(-6, 0, 8, 20, 0xffffff);
     this.rightLeg=scene.add.rectangle(6, 0, 8, 20, 0xffffff);
 
-    this.boardSprite=scene.add.rectangle(0, 20, 44, 8, 0xff6600);
-    this.leftWheel=scene.add.circle(-14, 26, 5, 0x333333);
-    this.rightWheel=scene.add.circle(14, 26, 5, 0x333333);
+    this.boardSprite=scene.add.rectangle(0, 0, 44, 8, 0xff6600);
+    this.leftWheel=scene.add.circle(-14, 6, 5, 0x333333);
+    this.rightWheel=scene.add.circle(14, 6, 5, 0x333333);
+
+    this.boardContainer=scene.add.container(0, 20, [
+      this.boardSprite,
+      this.leftWheel,
+      this.rightWheel
+    ]);
 
     this.container.add([
       this.bodySprite,
       this.headSprite,
       this.leftLeg,
       this.rightLeg,
-      this.boardSprite,
-      this.leftWheel,
-      this.rightWheel
+      this.boardContainer
     ]);
     
 
@@ -57,14 +61,10 @@ class Player {
 
       if (isFlipping) {
         this.container.angle=0;
-        this.boardSprite.angle =flipAngle;
-        this.leftWheel.angle=flipAngle;
-        this.rightWheel.angle =flipAngle;
+        this.boardContainer.angle =flipAngle;
       } else {
-        this.boardSprite.angle=0;
-        this.leftWheel.angle=0;
-        this.rightWheel.angle=0;
-      }
+        this.boardContainer.angle=0;
+      
       
        if (!this.onGround) {
         this.container.angle=Phaser.Math.Clamp(velocityY * 0.04, -20, 20);
@@ -74,10 +74,10 @@ class Player {
         this.container.angle=-4;
       }
     }
+  }
+    
     resetBoardAngle() {
-      this.boardSprite.angle=0;
-      this.leftWheel.angle=0;
-      this.rightWheel.angle=0;
+      this.boardContainer.angle =0;
     }
 
   }
