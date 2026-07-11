@@ -291,9 +291,13 @@ class GameScene extends Phaser.Scene {
     }).setDepth(10);
 
     this.physics.add.collider(this.skater, ground);
+    this.physics.add.overlap(this.skater,this.rails,startGrind,null, this);
 
     //Obstacles
     this.obstacles = this.physics.add.staticGroup();
+    this.rails=this.physics.add.staticGroup();
+    this.nextRailX=1200;
+    this.isGrinding=false;
     this.physics.add.collider(this.skater, this.obstacles, hitObstacle, null, this);
     this.nextObstacleX = 700;
     this.alive = true;
@@ -422,6 +426,26 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
   if (body.velocity.y >0) {
     body.setVelocityY(body.velocity.y * 1.04);
 }
+
+    //grinding
+    if (this.isGrinding) {
+      this.skater.y=this.currentRail.y-34;
+      this.skater.body.setVelocityY(0);
+      this.score+=2;
+
+    //jump out grind
+    if(Phaser.Input.Keyboard.JustDown(this.cursors.up) || Phaser.Input.Keyboard.JustDown(this.cursors.space)) {
+      this.isGrinding=false;
+      this.skater.body.setAllowGravity(true);
+      this.skater.body.setVelocityY(-600);
+    }
+
+    //fell off the end of rail
+    if (this.skater.x > this.currentRail.x+100) {
+      this.isGrinding=false;
+      this.skater.body.setAllowGravity(true);
+    }
+  }
     //trick inputs
     if (!this.onGround && !this.isFlipping) {
       const kickHeld= this.kickflipKey.isDown;
@@ -482,6 +506,12 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
       this.physics.add.existing(obs, true);
       this.obstacles.add(obs);
       this.nextObstacleX += Phaser.Math.Between(500, 900);
+    }
+
+    if (this.skater.x+600 > this.nextRailX) {
+      const rail=this.add.rectangle(this.nextRailX, GROUND_Y-80, 200,8,0x888888).setDepth(7);
+      this.physics.add.existing(rail,true);
+      this.nextRailX+=Phaser.Math.Between(800,1400);
     }
 
     this.score += 1;
@@ -594,6 +624,15 @@ function hitObstacle() {
   }).setOrigin(0.5).setScrollFactor(0).setDepth(30);
 
   this.time.delayedCall(2500, () => this.scene.start('MenuScene'));
+}
+
+function startGrind(skater,rail) {
+  if (this.isGrinding) return;
+  this.isGrinding=true;
+  this.currentRail=rail;
+  skater.body.velocityY=0;
+  skater.body.setAllowGravity(false);
+  skater.y=rail.y-34;
 }
 
 // PHASER CONFIG
