@@ -332,6 +332,7 @@ class GameScene extends Phaser.Scene {
     this.coyoteTimer = 0;
 
     // ---- HUD ----
+    this.activeTrickTexts=0;
     this.combo=0;
     this.comboText = this.add.text(W/2, H*0.15, '', {
       fontSize: '20px',
@@ -570,7 +571,10 @@ const config = {
 };
 
 function showTrickText(scene, text, points) {
-  const tx =scene.add.text (W/2, H *0.35, text + ' +' + points,{
+  const offsetY = scene.activeTrickTexts *30;
+  scene.activeTrickTexts +=1
+
+  const tx =scene.add.text (W/2, H *0.35 -offsetY, text + ' +' + points,{
     fontSize:'14px',
     fill: '#ffff00',
     fontFamily: '"Press Start 2P"'
@@ -583,7 +587,10 @@ scene.tweens.add({
   duration: 500,
   delay: 800,
   ease: 'Quad.easOut',
-  oncomplete: () => tx.destroy()
+  oncomplete: () => {
+    scene.activeTrickTexts -=1;
+    tx.destroy()
+  }
 });
 }
 
