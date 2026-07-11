@@ -179,7 +179,7 @@ class GameScene extends Phaser.Scene {
     //STARS (night only)
     if (theme === 'night') {
       const starGfx = this.add.graphics().setScrollFactor(0).setDepth(1);
-      for (let i = 0; i < NEAR_BUILDING_COUNT; i++) {
+      for (let i = 0; i < 150; i++) {
         const sx = Phaser.Math.Between(0, W);
         const sy = Phaser.Math.Between(0, H * 0.75);
         starGfx.fillStyle(0xffffff, Math.random() * 0.7 + 0.3);
@@ -291,22 +291,19 @@ class GameScene extends Phaser.Scene {
     }).setDepth(10);
 
     this.physics.add.collider(this.skater, ground);
-    this.physics.add.overlap(this.skater,this.rails,startGrind,null, this);
 
     //Obstacles
     this.obstacles = this.physics.add.staticGroup();
-    this.rails=this.physics.add.staticGroup();
-    this.nextRailX=1200;
-    this.isGrinding=false;
     this.physics.add.collider(this.skater, this.obstacles, hitObstacle, null, this);
     this.nextObstacleX = 700;
     this.alive = true;
     this.obstacleColor = C.obstacle;
-    this.rails = this.physics.add.staticGroup();
 
-    const rail = this.add.rectangle(900, GROUND_Y-90, 220, 8,0x888888).setDepth(7);
-    this.physics.add.existing(rail, true);
-    this.rails.add(rail);
+    this.rails=this.physics.add.staticGroup();
+    this.nextRailX=1200;
+    this.isGrinding=false;
+    this.physics.add.overlap(this.skater,this.rails,startGrind,null, this);
+
 
     //Controls
     this.cursors     = this.input.keyboard.createCursorKeys();
@@ -511,6 +508,7 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
     if (this.skater.x+600 > this.nextRailX) {
       const rail=this.add.rectangle(this.nextRailX, GROUND_Y-80, 200,8,0x888888).setDepth(7);
       this.physics.add.existing(rail,true);
+      this.rails.add(rail);
       this.nextRailX+=Phaser.Math.Between(800,1400);
     }
 
