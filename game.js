@@ -333,6 +333,7 @@ class GameScene extends Phaser.Scene {
 
     // ---- HUD ----
     this.activeTrickTexts=0;
+    this.landedClean=true;
     this.combo=0;
     this.comboText = this.add.text(W/2, H*0.15, '', {
       fontSize: '20px',
@@ -356,17 +357,25 @@ class GameScene extends Phaser.Scene {
   update() {
     if (!this.alive) return;
 
+    if (this.recoveryActive) {
+      this.recoveryTimer -= this.game.loop.delta;
+      if (this.recoveryTimer <= 0) {
+        this.recoveryActive=false;
+        this.recoveryText.destroy();
+        this.input.keyboard.off('keydown', this.handleRecoveryInput, this);
+        hitObstacle.call(this);
+      }
+    }
+
     const body = this.skater.body;
     this.onGround = body.blocked.down;
 
     if (!this.wasOnGround && this.onGround) {
-      if(this.combo >0) {
-        this.comboText.setText('');
-        this.combo=0;
-      }
+      if(this.isFlipping && !this.landedClean) {
+        this.startRecovery();
+      } else{
       this.cameras.main.shake(60, 0.003);
       this.dust.explode(20, this.skater.x, this.skater.y + 30);
-
       this.tweens.add({
         targets: [this.player.container],
         scaleY: 0.7,
@@ -375,7 +384,12 @@ class GameScene extends Phaser.Scene {
         yoyo: true,
         ease: 'Quad.easeOut'
       });
+      if (this.combo >0) {
+        this.comboText.setText('');
+        this.combo=0;
+      }
     }
+  }
 
     this.wasOnGround = this.onGround;
 
@@ -415,22 +429,25 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
 }
 
     if (!this.onGround && !this.isFlipping) {
-      const kickJust= Phaser.Input.Keyboard.JustDown(this.kickflipKey);
-      const heelJust= Phaser.Input.Keyboard.JustDown(this.heelflipKey);
-      const shoveitJust= Phaser.Input.Keyboard.JustDown(this.shoveitKey);
+      const kickHeld= this.kickflipKey.isDown;
+      const heelHeld= this.heelflipKey.isDown;
+      const shoveitHeld= this.shoveitKey.isDown;
 
-      if (kickJust){
+      if (kickHeld){
         this.isFlipping=true;
         this.flipAngle=0;
         this.currentTrick='kickflip';
-      } else if (heelJust) {
+        this.landedClean=false;
+      } else if (heelHeld) {
         this.isFlipping=true;
         this.flipAngle=0;
         this.currentTrick='heelflip';
-      } else if (shoveitJust) {
+        this.landedClean=false;
+      } else if (shoveitHeld) {
       this.isFlipping=true;
       this.flipAngle=0;
       this.currentTrick='shoveit';
+      this.landedClean=false;
     }
   }
 
@@ -445,6 +462,7 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
         this.isFlipping = false;
         this.flipAngle  = 0;
         this.player.resetBoardAngle();
+        this.landedClean=true;
         const trickNames= {kickflip: 'KICKFLIP', heelflip: 'HEELFLIP', shoveit: 'POP SHUV'};
         const trickPoints= {kickflip: 50, heelflip:50, shoveit:40};
         this.combo+=1;
@@ -495,6 +513,54 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
       }
     }
   }
+
+//RECOVERY
+startRecovery() {
+  const keys =['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'];
+  this.recoverySequence = [];
+  this.recoveryInput=[];
+  for (let i = 0; i<4; i++) {
+    this.recoverySequence.push(keys[Phaser.Math.Between(0, keys.length -1)]);
+  }
+
+  this.recoveryActive=true;
+  this.recoveryTimer=2000;
+
+  this.recoveryText=this.add.text(W/2, H*0.5, 'RECOVER: ' + this.recoverySequence.join(' '), {
+    fontSize: '16px',
+    fill: '#ff0000',
+    fontFamily: '"Press Start 2P"'
+  }).setDepth(30).setScrollFactor(0). setOrigin(0.5);
+
+  this.input.keyboard.on('keydown', this.handleRecoveryInput, this);
+}
+
+handleRecoveryInput(event) {
+  if (!this.recoveryActive) return;
+
+  this.recoveryInput.push(event.key.toUpperCase());
+
+  const current = this.recoveryInput.length -1;
+  if (this.recoveryInput[current] !== this.recoverySequence[current]) {
+    this.recoveryActive=false;
+    this.recoveryText.destroy();
+    this.input.keyboard.off('keydown', this.handleRecoveryInput, this);
+    hitObstacle.call(this);
+    return;
+  }
+
+  if (this.recoveryInput.length === this.recoverySequence.length) {
+    this.recoveryActive=false;
+    this.recoveryText.destroy();
+    this.input.keyboard.off('keydown', this.recoveryInput, this);
+    this.add.text(W/2, H*0.5, 'RECOVERED', {
+      fontSize: '20px',
+      fill: '#00ff00',
+      fontFamily: '"Press Start 2P"'
+    }).setDepth(30).setScrollFactor(0).setOrigin(0.5);
+  }
+}
+
 }
 // DRAW SKATER
 function drawSkater(gfx, boardGfx, x, y, isCrouching, boardAngle) {
