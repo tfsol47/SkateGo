@@ -278,6 +278,18 @@ class GameScene extends Phaser.Scene {
     px.fillRect(0, 0, 4, 4);
     px.generateTexture('white_particle', 4, 4);
     px.destroy();
+
+    //spark texture when grinding
+    const sparkPx=this.make.graphics({x:0,y:0,add:false});
+    sparkPx.fillStyle(0xffaa00);
+    sparkPx.fillRect(0,0,3,3);
+    sparkPx.generateTexture('spark', 3,3);
+    sparkPx.destroy();
+
+    this.sparks=this.add.particles(0,0,'spark',{
+      speed:{min:50,max:150}, angle:{min:200, max:340}, lifespan:300, quantity:0, scale: {start:1, end:0},
+      alpha: {start:1, end:0}
+    }).setDepth(10);
     
     
     this.dust = this.add.particles(0, 0, 'white_particle',{
@@ -429,6 +441,7 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
       this.skater.y=this.currentRail.y-34;
       this.skater.body.setVelocityY(0);
       this.score+=2;
+      this.sparks.emitParticleAt(this.skater.x,this.skater.y+30,3);
 
     //jump out grind
     if(Phaser.Input.Keyboard.JustDown(this.cursors.up) || Phaser.Input.Keyboard.JustDown(this.cursors.space)) {
