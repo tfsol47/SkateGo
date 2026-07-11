@@ -448,12 +448,15 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
       this.isGrinding=false;
       this.skater.body.setAllowGravity(true);
       this.skater.body.setVelocityY(-600);
+      this.showTrickText('50-50 GRIND', 30);
+
     }
 
     //fell off the end of rail
     if (this.skater.x > this.currentRail.x+100) {
       this.isGrinding=false;
       this.skater.body.setAllowGravity(true);
+      this.showTrickText('50-50 GRIND', 30);
     }
   }
     //trick inputs
