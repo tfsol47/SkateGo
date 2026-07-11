@@ -314,6 +314,8 @@ class GameScene extends Phaser.Scene {
     this.rails=this.physics.add.staticGroup();
     this.nextRailX=1200;
     this.isGrinding=false;
+    this.grindCooldown=0;
+    this.grindScore=0;
     this.physics.add.overlap(this.skater,this.rails,startGrind,null, this);
 
 
@@ -357,6 +359,9 @@ class GameScene extends Phaser.Scene {
 
   update(time, delta) {
     if (!this.alive) return;
+    if (this.grindCooldown>0) {
+      this.grindCooldown-=this.game.loop.delta;
+    }
 
     if (this.recoveryActive) {
       this.recoveryTimer -= delta;
@@ -440,23 +445,29 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
     if (this.isGrinding) {
       this.skater.y=this.currentRail.y-34;
       this.skater.body.setVelocityY(0);
-      this.score+=2;
+      this.grindScore += 1;
+      this.score+=0.5;
       this.sparks.emitParticleAt(this.skater.x,this.skater.y+30,3);
 
     //jump out grind
     if(Phaser.Input.Keyboard.JustDown(this.cursors.up) || Phaser.Input.Keyboard.JustDown(this.cursors.space)) {
       this.isGrinding=false;
       this.skater.body.setAllowGravity(true);
-      this.skater.body.setVelocityY(-600);
-      this.showTrickText('50-50 GRIND', 30);
+      this.skater.body.setVelocityY(-700);
+      this.showTrickText('50-50 GRIND', Math.floor(this.grindScore));
+      this.grindCooldown=500;
+      this.grindScore=0;
 
     }
 
     //fell off the end of rail
     if (this.skater.x > this.currentRail.x+100) {
+      console.log('grindscore at exit:', this.grindScore);
       this.isGrinding=false;
       this.skater.body.setAllowGravity(true);
-      this.showTrickText('50-50 GRIND', 30);
+      this.showTrickText('50-50 GRIND', Math.floor(this.grindScore));
+      this.grindCooldown=500;
+      this.grindScore=0;
     }
   }
     //trick inputs
@@ -642,6 +653,7 @@ function hitObstacle() {
 
 function startGrind(skater,rail) {
   if (this.isGrinding) return;
+  if (this.grindCooldown>0) return;
   this.isGrinding=true;
   this.currentRail=rail;
   skater.body.velocityY=0;
