@@ -121,7 +121,7 @@ class MenuScene extends Phaser.Scene {
     nightBtn.on('pointerdown',  () => this.scene.start('GameScene', { theme: 'night' }));
     sunsetBtn.on('pointerdown', () => this.scene.start('GameScene', { theme: 'sunset' }));
 
-    this.add.text(W / 2, H * 0.8, 'SPACE / ARROW UP = JUMP          K = KICKFLIP\n ARROW DOWN = POWERSLIDE', {
+    this.add.text(W / 2, H * 0.8, 'SPACE / ARROW UP = JUMP          K = KICKFLIP\n ARROW DOWN = POWERSLIDE  H = HEELFLIP  S = SHOVE IT', {
       fontSize: '12px', fill: '#555555', fontFamily: '"Press Start 2P"'
     }).setOrigin(0.5);
   }
@@ -348,6 +348,7 @@ class GameScene extends Phaser.Scene {
     this.speedText = this.add.text(16, 44, 'SPEED: 1', {
       fontSize: '16px', fill: C.hudColor, fontFamily: '"Press Start 2P"'
     }).setScrollFactor(0).setDepth(20);
+    this.highScore=this.highScore || 0;
 
     // ---- CAMERA ----
     this.cameras.main.startFollow(this.skater, true, 0.1, 0.1);
@@ -497,10 +498,6 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
     this.score += 1;
     this.scoreText.setText('SCORE: ' + Math.floor(this.score / 10));
     this.speedText.setText('SPEED: ' + (Math.floor(this.score / 100) + 1));
-
-
-
-
   }
 
 //RECOVERY
@@ -596,14 +593,21 @@ function drawSkater(gfx, boardGfx, x, y, isCrouching, boardAngle) {
 // HIT OBSTACLE (change in the future)
 function hitObstacle() {
   this.alive = false;
+  this.recoveryCount=0;
   this.skater.body.setVelocityX(0);
 
   this.add.text(W / 2, H * 0.35, 'FAILED!', {
     fontSize: '48px', fill: '#ff0000', fontFamily: '"Press Start 2P"'
   }).setOrigin(0.5).setScrollFactor(0).setDepth(30);
-
+  if(Math.floor(this.score/10) > this.highScore) {
+    this.highScore=Math.floor(this.score/10);
+  }
   this.add.text(W / 2, H * 0.5, 'SCORE: ' + Math.floor(this.score / 10), {
     fontSize: '24px', fill: '#ffffff', fontFamily: '"Press Start 2P"'
+  }).setOrigin(0.5).setScrollFactor(0).setDepth(30);
+
+  this.add.text(W/2, H*0.58, 'BEST: ' + this.highScore, {
+    fontSize: '18px', fill: '#ffff00', fontFamily: '"Press Start 2P"'
   }).setOrigin(0.5).setScrollFactor(0).setDepth(30);
 
   this.add.text(W / 2, H * 0.62, 'returning to menu...', {
