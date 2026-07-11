@@ -403,7 +403,9 @@ class GameScene extends Phaser.Scene {
 
     const baseSpeed = Math.min(250 + Math.floor(this.score / 100) * 15, 600);
 
-if (this.cursors.down.isDown && this.onGround) {
+    if(this.recoveryActive){
+      this.skateSpeed=30;
+    } else if (this.cursors.down.isDown && this.onGround) {
   this.skateSpeed = Math.max(80, (this.skateSpeed || baseSpeed) * 0.985);
 } else {
   this.skateSpeed = baseSpeed;
@@ -415,7 +417,8 @@ body.setVelocityX(this.skateSpeed);
 if (
     (Phaser.Input.Keyboard.JustDown(this.cursors.up) ||
      Phaser.Input.Keyboard.JustDown(this.cursors.space)) &&
-    this.coyoteTimer > 0
+    this.coyoteTimer > 0 &&
+    !this.recoveryActive
 ) {
     body.setVelocityY(-750);
     this.coyoteTimer = 0;
@@ -537,7 +540,7 @@ startRecovery() {
     fontFamily: '"Press Start 2P"'
   }).setDepth(30).setScrollFactor(0).setOrigin(0.5);
 
-  this.input.keyboard.on('keydown SPACE', this.handleRecoveryInput, this);
+  this.input.keyboard.on('keydown-SPACE', this.handleRecoveryInput, this);
 }
 
 
@@ -554,7 +557,7 @@ handleRecoveryInput() {
     this.recoveryText.destroy();
     this.recoveryBar.destroy();
     this.recoveryFill.destroy();
-    this.input.keyboard.off('keydown SPACE', this.handleRecoveryInput, this);
+    this.input.keyboard.off('keydown-SPACE', this.handleRecoveryInput, this);
     this.skateSpeed=250;
 
     const recovered= this.add.text(W/2, H*0.5, 'RECOVERED', {
@@ -637,7 +640,6 @@ const config = {
   type: Phaser.AUTO,
   width:  window.innerWidth,
   height: window.innerHeight,
- // zoom: Math.floor(Math.min(window.innerWidth / 480, window.innerHeight / 270)),
   pixelArt:true,
   roundPixels: true,
   physics: {
