@@ -497,7 +497,7 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
 
     this.speedLines.clear();
 
-    if(this.skatespeed > 280) {
+    if(this.skateSpeed > 280) {
       for (let i=0; i <12; i++){
 
         const x =this.skater.x - Phaser.Math.Between(50, 350);
@@ -516,6 +516,8 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
 
 //RECOVERY
 startRecovery() {
+  this.skater.body.setVelocityX(80);
+  this.skateSpeed=80;
   const keys =['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'];
   this.recoverySequence = [];
   this.recoveryInput=[];
@@ -553,6 +555,7 @@ handleRecoveryInput(event) {
     this.recoveryActive=false;
     this.recoveryText.destroy();
     this.input.keyboard.off('keydown', this.recoveryInput, this);
+    this.skateSpeed =250;
     this.add.text(W/2, H*0.5, 'RECOVERED', {
       fontSize: '20px',
       fill: '#00ff00',
