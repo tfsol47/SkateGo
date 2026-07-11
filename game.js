@@ -3,17 +3,18 @@ const H = window.innerHeight;
 
 const GROUND_Y = H - 80;
 const SKATER_START_Y = GROUND_Y - 35;
+
 class Player {
   constructor(scene, x, y) {
     this.scene = scene;
-    this.body=scene.add.rectangle(x,y,40,60, 0x000000,0);
+    this.body=scene.add.rectangle(x, y,40,60,0x000000, 0);
     scene.physics.add.existing(this.body);
-//REPLACE SOON
-    this.container=scene.add.container(x, y).setDepth(9).setDepth(9).setVisible(true);
+
+//REMEMEBER TO SWAP FOR ACTUAL SPRITES
+    this.container=scene.add.container(x, y).setDepth(9);
 
     this.bodySprite=scene.add.rectangle(0, -25, 24, 30, 0xffffff);
     this.headSprite = scene.add.circle(0, -45, 12, 0xffd700);
-
     this.leftLeg=scene.add.rectangle(-6, 0, 8, 20, 0xffffff);
     this.rightLeg=scene.add.rectangle(6, 0, 8, 20, 0xffffff);
 
@@ -39,19 +40,14 @@ class Player {
     this.onGround=false;
     this.wasOnGround=false;
     this.isFlipping=false;
+    this.recoveryCount=0;
     this.flipAngle=0;
-
     this.coyoteTime=180;
     this.coyoteTimer=0;
-
     this.jumpForce=800;
-
     this.speed=250;
-
     this.isGrinding=false;
     this.combo=0;
-  
-
   }
   
 
@@ -66,15 +62,14 @@ class Player {
         } else{
           this.boardContainer.angle =0;
           this.boardContainer.scaleX=1;
-        
        } 
 
        if (!this.onGround) {
         this.container.angle=Phaser.Math.Clamp(velocityY * 0.04, -20, 20);
       } else if (cursors.down.isDown) {
-        this.container.angle =8;
+        this.container.angle =12; //Powersliding tilt
       } else{
-        this.container.angle=-4;
+        this.container.angle=-4;//cruising tilt
       }
     }
   
@@ -85,16 +80,17 @@ class Player {
   }
   
 
-// MENU SCENE
+//Menu
 class MenuScene extends Phaser.Scene {
-  constructor() { super({ key: 'MenuScene' }); }
-  preload() {}
+  constructor() {
+     super({ key: 'MenuScene' }); }
 
   create() {
-    console.log('GameScene create started');
-    const theme = this.theme;
     this.add.rectangle(0, 0, W, H, 0x000000).setOrigin(0, 0);
-
+    
+    if (!this.registry.has('highscore')) {
+      this.registry.set('highscore', 0);
+    }
 
     this.add.text(W / 2, H * 0.2, 'SKATE GO', {
       fontSize: '48px', fill: '#ffffff', fontFamily: '"Press Start 2P"'
@@ -104,11 +100,13 @@ class MenuScene extends Phaser.Scene {
       fontSize: '20px', fill: '#a1a1a1', fontFamily: '"Press Start 2P"'
     }).setOrigin(0.5);
 
+    //Night city
     const nightBtn = this.add.rectangle(W / 2 - 200, H * 0.55, 320, 80, 0x1a1a2e).setInteractive();
     this.add.text(W / 2 - 200, H * 0.55, 'NIGHT CITY', {
       fontSize: '18px', fill: '#00ffff', fontFamily: '"Press Start 2P"'
     }).setOrigin(0.5);
 
+    //sunset suburb
     const sunsetBtn = this.add.rectangle(W / 2 + 200, H * 0.55, 320, 80, 0x2d1b00).setInteractive();
     this.add.text(W / 2 + 200, H * 0.55, 'SUNSET\nSUBURB', {
       fontSize: '18px', fill: '#ff6600', fontFamily: '"Press Start 2P"', align: 'center'
@@ -118,6 +116,7 @@ class MenuScene extends Phaser.Scene {
     nightBtn.on('pointerout',   () => nightBtn.setFillStyle(0x1a1a2e));
     sunsetBtn.on('pointerover', () => sunsetBtn.setFillStyle(0x4d3b00));
     sunsetBtn.on('pointerout',  () => sunsetBtn.setFillStyle(0x2d1b00));
+
     nightBtn.on('pointerdown',  () => this.scene.start('GameScene', { theme: 'night' }));
     sunsetBtn.on('pointerdown', () => this.scene.start('GameScene', { theme: 'sunset' }));
 
@@ -126,73 +125,61 @@ class MenuScene extends Phaser.Scene {
     }).setOrigin(0.5);
   }
 
-  update() {}
 }
 
-// GAME SCENE
+//GAME SCENE
 class GameScene extends Phaser.Scene {
-  constructor() { super({ key: 'GameScene' }); }
-  init(data) { this.theme = data.theme || 'night'; }
-  preload() {}
+  constructor() {
+   super({ key: 'GameScene' });
+  
+  }
+  init(data) {
+   this.theme = data.theme || 'night'; 
+  }
 
   create() {
     const theme = this.theme;
 
-    const C = {
-      night: {
-        skyTop:     0x04040f,
-        skyMid:     0x0a0a2a,
-        skyBot:     0x0d1235,
-        buildFar:   0x0c0c22,
-        buildNear:  0x161630,
-        winFar:     0x00ffff,
-        winNear:    0x44ffff,
-        ground:     0x00cc00,
-        groundDark: 0x005500,
-        obstacle:   0xff0044,
-        hudColor:   '#00ffff',
-      },
-      sunset: {
-        skyTop:     0x0a0000,
-        skyMid:     0xcc2200,
-        skyBot:     0xff7700,
-        buildFar:   0x120800,
-        buildNear:  0x1e0e00,
-        winFar:     0xffaa00,
-        winNear:    0xffcc44,
-        ground:     0xaa5500,
-        groundDark: 0x552200,
-        obstacle:   0x8b0000,
-        hudColor:   '#ffaa00',
-      }
-    }[theme];
-
-    // ---- GRADIENT SKY (fixed) ----
-    const skyGfx = this.add.graphics().setScrollFactor(0).setDepth(0);
-    const strips = 40;
-    for (let i = 0; i < strips; i++) {
-      const t = i / strips;
-      let r, g, b;
-      if (t < 0.5) {
-        const t2 = t * 2;
-        r = lerp(hexR(C.skyTop), hexR(C.skyMid), t2);
-        g = lerp(hexG(C.skyTop), hexG(C.skyMid), t2);
-        b = lerp(hexB(C.skyTop), hexB(C.skyMid), t2);
-      } else {
-        const t2 = (t - 0.5) * 2;
-        r = lerp(hexR(C.skyMid), hexR(C.skyBot), t2);
-        g = lerp(hexG(C.skyMid), hexG(C.skyBot), t2);
-        b = lerp(hexB(C.skyMid), hexB(C.skyBot), t2);
-      }
-      const col = (Math.round(r) << 16) | (Math.round(g) << 8) | Math.round(b);
-      skyGfx.fillStyle(col);
-      skyGfx.fillRect(0, i * (H / strips), W, Math.ceil(H / strips) + 1);
+    let C;
+    if (theme === 'night') {
+      C= {
+        skyTop:0x04040f,
+        skyMid:0x0a0a2a,
+        skyBot:0x0d1235,
+        buildFar:0x0c0c22,
+        buildNear:0x161630,
+        winFar:0x00ffff,
+        winNear:0x44ffff,
+        ground:0x00cc00,
+        groundDark:0x005500,
+        obstacle:0xff0044,
+        hudColor:'#00ffff',
+      };
+    } else {
+      C= {
+        skyTop:0x0a0000,
+        skyMid:0xcc2200,
+        skyBot:0xff7700,
+        buildFar:0x120800,
+        buildNear:0x1e0e00,
+        winFar:0xffaa00,
+        winNear:0xffcc44,
+        ground:0xaa5500,
+        groundDark:0x552200,
+        obstacle:0x8b0000,
+        hudColor:'#ffaa00',
+      };
     }
 
-    // ---- STARS (night only) ----
+    //GRADIENT SKY (fixed) 
+    const skyGfx = this.add.graphics().setScrollFactor(0).setDepth(0);
+    skyGfx.fillGradientStyle(C.skyTop,C.skyTop, C.skyBot,C.skyBot, 1,1,1,1);
+    skyGfx.fillRect(0,0,W,H);
+
+    //STARS (night only)
     if (theme === 'night') {
       const starGfx = this.add.graphics().setScrollFactor(0).setDepth(1);
-      for (let i = 0; i < 150; i++) {
+      for (let i = 0; i < NEAR_BUILDING_COUNT; i++) {
         const sx = Phaser.Math.Between(0, W);
         const sy = Phaser.Math.Between(0, H * 0.75);
         starGfx.fillStyle(0xffffff, Math.random() * 0.7 + 0.3);
@@ -200,8 +187,7 @@ class GameScene extends Phaser.Scene {
       }
     }
 
-    
-    // ---- MOON / SUN ----
+    //MOON/SUN 
     const moonGfx = this.add.graphics().setScrollFactor(0).setDepth(2);
     if (theme === 'night') {
       moonGfx.fillStyle(0xffffdd);
@@ -217,17 +203,21 @@ class GameScene extends Phaser.Scene {
       moonGfx.fillCircle(W * 0.72, H * 0.2, 44);
     }
 
-    // ---- FAR BUILDINGS (fixed to camera) ----
+    //FAR BUILDINGS (fixed to camera) 
+    const FAR_BUILDING_COUNT=200;
+    const FAR_SPACING=120;
+    const totalFarWidth=(FAR_BUILDING_COUNT*FAR_SPACING) +500;
     this.farGfx = this.add.graphics().setScrollFactor(0.1).setDepth(3);
     this.farGfx.fillStyle(C.buildFar);
-    this.farGfx.fillRect(0, GROUND_Y - 10, 200 * 120 +200, 10);
-    for (let i = 0; i < 200; i++) {
+    this.farGfx.fillRect(0, GROUND_Y - 10, totalFarWidth,10);
+    for (let i = 0; i < FAR_BUILDING_COUNT; i++) {
       const bx = i * 120 + Phaser.Math.Between(0, 40);
       const bh = Phaser.Math.Between(60, 160);
       const bw = Phaser.Math.Between(40, 90);
       const by = GROUND_Y - bh;
       this.farGfx.fillStyle(C.buildFar);
       this.farGfx.fillRect(bx, by, bw, bh);
+
       for (let wy = by + 8; wy < GROUND_Y - 8; wy += 18) {
         for (let wx = bx + 6; wx < bx + bw - 6; wx += 14) {
           if (Math.random() > 0.45) {
@@ -238,10 +228,14 @@ class GameScene extends Phaser.Scene {
       }
     }
 
-    // ---- NEAR BUILDINGS (fixed to camera) ----
+    //NEAR BUILDINGS (fixed to camera) 
+    const NEAR_BUILDING_COUNT=150;
+    const NEAR_SPACING=180;
+    const totalNearWidth=(NEAR_BUILDING_COUNT*NEAR_SPACING) +600;
+
     this.nearGfx = this.add.graphics().setScrollFactor(0.3).setDepth(4);
     this.nearGfx.fillStyle(C.buildNear);
-    this.nearGfx.fillRect(0, GROUND_Y - 6, 150 * 180 +200, 6);
+    this.nearGfx.fillRect(0, GROUND_Y - 6,totalNearWidth, 6);
     for (let i = 0; i < 150; i++) {
       const bx = i * 180 + Phaser.Math.Between(0, 60);
       const bh = Phaser.Math.Between(100, 240);
@@ -249,6 +243,7 @@ class GameScene extends Phaser.Scene {
       const by = GROUND_Y - bh;
       this.nearGfx.fillStyle(C.buildNear);
       this.nearGfx.fillRect(bx, by, bw, bh);
+
       for (let wy = by + 12; wy < GROUND_Y - 8; wy += 22) {
         for (let wx = bx + 8; wx < bx + bw - 8; wx += 18) {
           if (Math.random() > 0.35) {
@@ -259,27 +254,25 @@ class GameScene extends Phaser.Scene {
       }
     }
 
-    // ---- GROUND ----
+    // GROUND 
     const ground = this.physics.add.staticGroup();
-    for (let i = 0; i < 400; i++) {
+    for (let i = 0; i < 2000; i++) {
       const tile = this.add.rectangle(i * 200 + 100, GROUND_Y, 200, 8, C.ground).setDepth(5);
       ground.add(tile);
     }
     const gDetail = this.add.graphics().setDepth(5);
-    for (let i = 0; i < 400; i++) {
+    for (let i = 0; i < 2000; i++) {
       gDetail.fillStyle(C.groundDark);
       gDetail.fillRect(i * 200 + 10, GROUND_Y + 4, 160, 2);
     }
 
-    // ---- SKATER (still thinking of name)----
+    //SKATER (still thinking of name)
     this.player =new Player(this, 100, SKATER_START_Y);
     this.skater=this.player.body;
-    this.skaterGfx = this.add.graphics().setDepth(9);
-    this.boardGfx=this.add.graphics().setDepth(9);
+
     this.speedLines = this.add.graphics().setDepth(6);
 
-
-
+    //Dust when landing
     const px=this.make.graphics({x:0, y:0, add:false});
     px.fillStyle(0xffffff);
     px.fillRect(0, 0, 4, 4);
@@ -299,7 +292,7 @@ class GameScene extends Phaser.Scene {
 
     this.physics.add.collider(this.skater, ground);
 
-    // ---- OBSTACLES ----
+    //Obstacles
     this.obstacles = this.physics.add.staticGroup();
     this.physics.add.collider(this.skater, this.obstacles, hitObstacle, null, this);
     this.nextObstacleX = 700;
@@ -307,34 +300,28 @@ class GameScene extends Phaser.Scene {
     this.obstacleColor = C.obstacle;
     this.rails = this.physics.add.staticGroup();
 
-    const rail = this.add.rectangle(
-      900,
-      GROUND_Y - 90,
-      220,
-      8,
-      0x888888
-    ).setDepth(7);
-
+    const rail = this.add.rectangle(900, GROUND_Y-90, 220, 8,0x888888).setDepth(7);
     this.physics.add.existing(rail, true);
     this.rails.add(rail);
 
-    // ---- INPUT ----
+    //Controls
     this.cursors     = this.input.keyboard.createCursorKeys();
     this.kickflipKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.K);
     this.heelflipKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.H);
     this.shoveitKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S);
+
     this.isFlipping  = false;
     this.flipAngle   = 0;
     this.onGround    = false;
     this.wasOnGround = true;
-
     this.coyoteTime = 100;
     this.coyoteTimer = 0;
 
-    // ---- HUD ----
+    //Hud
     this.activeTrickTexts=0;
     this.landedClean=true;
     this.combo=0;
+
     this.comboText = this.add.text(W/2, H*0.15, '', {
       fontSize: '20px',
       fill: '#ff6600',
@@ -348,24 +335,24 @@ class GameScene extends Phaser.Scene {
     this.speedText = this.add.text(16, 44, 'SPEED: 1', {
       fontSize: '16px', fill: C.hudColor, fontFamily: '"Press Start 2P"'
     }).setScrollFactor(0).setDepth(20);
-    this.highScore=this.highScore || 0;
+    this.highScore=this.registry.get('highscore');
 
-    // ---- CAMERA ----
+    //Camera
     this.cameras.main.startFollow(this.skater, true, 0.1, 0.1);
     this.cameras.main.setFollowOffset(-W * 0.18, 0);
   }
 
-  update() {
+  update(time, delta) {
     if (!this.alive) return;
 
     if (this.recoveryActive) {
-      this.recoveryTimer -= this.game.loop.delta;
+      this.recoveryTimer -= delta;
       if (this.recoveryTimer <= 0) {
         this.recoveryActive=false;
         this.recoveryText.destroy();
         this.recoveryBar.destroy();
         this.recoveryFill.destroy();
-        this.input.keyboard.off('keydown SPACE', this.handleRecoveryInput, this);
+        this.input.keyboard.off('keydown-SPACE', this.handleRecoveryInput, this);
         hitObstacle.call(this);
       }
     }
@@ -373,12 +360,14 @@ class GameScene extends Phaser.Scene {
     const body = this.skater.body;
     this.onGround = body.blocked.down;
 
+    //landings
     if (!this.wasOnGround && this.onGround) {
       if(this.isFlipping && !this.landedClean) {
         this.startRecovery();
       } else{
       this.cameras.main.shake(60, 0.003);
       this.dust.explode(20, this.skater.x, this.skater.y + 30);
+
       this.tweens.add({
         targets: [this.player.container],
         scaleY: 0.7,
@@ -387,6 +376,7 @@ class GameScene extends Phaser.Scene {
         yoyo: true,
         ease: 'Quad.easeOut'
       });
+
       if (this.combo >0) {
         this.comboText.setText('');
         this.combo=0;
@@ -416,11 +406,9 @@ body.setVelocityX(this.skateSpeed);
 
     // Jump only once when the key is first pressed
 if (
-    (Phaser.Input.Keyboard.JustDown(this.cursors.up) ||
-     Phaser.Input.Keyboard.JustDown(this.cursors.space)) &&
+    (Phaser.Input.Keyboard.JustDown(this.cursors.up) || Phaser.Input.Keyboard.JustDown(this.cursors.space)) && 
     this.coyoteTimer > 0 &&
-    !this.recoveryActive
-) {
+    !this.recoveryActive) {
     body.setVelocityY(-750);
     this.coyoteTimer = 0;
 }
@@ -429,11 +417,12 @@ if (
 if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown)) {
   body.setVelocityY(body.velocity.y *0.6);
 }
-
+//gravity multiplier
+//keep 1.04 for now may change later
   if (body.velocity.y >0) {
     body.setVelocityY(body.velocity.y * 1.04);
 }
-
+    //trick inputs
     if (!this.onGround && !this.isFlipping) {
       const kickHeld= this.kickflipKey.isDown;
       const heelHeld= this.heelflipKey.isDown;
@@ -456,40 +445,40 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
       this.landedClean=false;
     }
   }
-
+    //flip rotations
     if (this.isFlipping) {
-      this.flipAngle += 18;
+      this.flipAngle += 1.1* delta;
       const displayAngle=this.currentTrick==='heelflip' ?-this.flipAngle : this.flipAngle;
       const targetAngle= 360;
 
-      this.player.update(this.cursors, true, displayAngle, body.velocity.y, this.currentTrick);
+      this.player.update(this.cursors, true, displayAngle, body.velocity.y);
 
       if (this.flipAngle >= targetAngle) {
         this.isFlipping = false;
         this.flipAngle  = 0;
         this.player.resetBoardAngle();
         this.landedClean=true;
+
         const trickNames= {kickflip: 'KICKFLIP', heelflip: 'HEELFLIP', shoveit: 'POP SHUV'};
         const trickPoints= {kickflip: 50, heelflip:50, shoveit:40};
+
         this.combo+=1;
         const name=trickNames[this.currentTrick];
         const pts =trickPoints[this.currentTrick] * this.combo;
-        showTrickText(this,name,pts);
+
+        this.showTrickText(name,pts);
         this.score += pts;
         this.currentTrick=null;
         this.comboText.setText('COMBO x' + this.combo);
       }
     } else {
-      this.player.update(this.cursors, false, 0, body.velocity.y, null);
+      this.player.update(this.cursors, false, 0, body.velocity.y);
     }
 
     // spawn obstacles
     if (this.skater.x + 500 > this.nextObstacleX) {
       const h = Phaser.Math.Between(30, 70);
-      const obs = this.add.rectangle(
-        this.nextObstacleX, GROUND_Y - h / 2,
-        30, h, this.obstacleColor
-      ).setDepth(7);
+      const obs = this.add.rectangle(this.nextObstacleX, GROUND_Y - h / 2,30, h, this.obstacleColor).setDepth(7);
       this.physics.add.existing(obs, true);
       this.obstacles.add(obs);
       this.nextObstacleX += Phaser.Math.Between(500, 900);
@@ -505,15 +494,13 @@ startRecovery() {
   this.skater.body.setVelocityX(80);
   this.skateSpeed=80;
   this.recoveryActive=true;
-  this.recoveryPressesNeeded=5 + (this.recoveryCount || 0) *2;
+  this.recoveryPressesNeeded=5 + this.recoveryCount *2;
   this.recoveryPresses=0;
   this.recoveryTimer=2000;
-  this.recoveryCount=(this.recoveryCount || 0) +1;
+  this.recoveryCount+=1;
 
-  this.recoveryBar=this.add.rectangle(W/2,H*0.55,200,20,0x333333)
-  .setDepth(30).setScrollFactor(0);
-  this.recoveryFill=this.add.rectangle(W/2-100, H*0.55, 0,20,0x00ff00)
-  .setDepth(31).setScrollFactor(0).setOrigin(0,0.5);
+  this.recoveryBar=this.add.rectangle(W/2,H*0.55,200,20,0x333333).setDepth(30).setScrollFactor(0);
+  this.recoveryFill=this.add.rectangle(W/2-100, H*0.55, 0,20,0x00ff00).setDepth(31).setScrollFactor(0).setOrigin(0,0.5);
 
   this.recoveryText=this.add.text(W/2,H*0.5, 'MASH SPACE TO RECOVER', {
     fontSize: '14px',
@@ -552,45 +539,36 @@ handleRecoveryInput() {
       alpha: 0,
       duration: 500,
       delay: 800,
-      onComplete: () => recovered.destroy()
+      onComplete:() => recovered.destroy()
     });
   } 
 }
-}
-// DRAW SKATER
-function drawSkater(gfx, boardGfx, x, y, isCrouching, boardAngle) {
-  gfx.clear();
-  gfx.setPosition(Math.round(x), Math.round(y));
-  boardGfx.setPosition(Math.round(x), Math.round(y));
-  gfx.rotation= Phaser.Math.DegToRad(boardAngle * 0.25);
 
-  const co = isCrouching ? 15 : 0;
+showTrickText(text, points) {
+  const offsetY=this.activeTrickTexts *30;
+  this.activeTrickTexts+=1;
 
-  gfx.fillStyle(0xffffff);
-  gfx.fillRect(-12, -60 + co, 24, 30);
+  //change text color based on combo multiplier later
+  const tx=this.add.text(W/2,H *0.35 - offsetY, text + ' +' +points, {
+    fontSize: '14px', fill: '#ffff00', fontFamily: '"Press Start 2P"'
+  }).setDepth(25).setScrollFactor(0).setOrigin(0.5);
 
-  gfx.fillStyle(0xffd700);
-  gfx.fillCircle(0, -75 + co, 14);
-
-  gfx.fillStyle(0xffffff);
-  const ll = isCrouching ? 10 : 30;
-  gfx.fillRect(-12, -30 + co, 10, ll);
-  gfx.fillRect(2,   -30 + co, 10, ll);
-
-  boardGfx.clear();
-  boardGfx.x     = x;
-  boardGfx.y     = y;
-  boardGfx.angle = boardAngle;
-
-  boardGfx.fillStyle(0xff6600);
-  boardGfx.fillRect(-22, 0, 44, 8);
-  boardGfx.fillStyle(0x333333);
-  boardGfx.fillCircle(-14, 10, 6);
-  boardGfx.fillCircle(14,  10, 6);
+  this.tweens.add({
+    targets:tx,
+    y: H*0.25,
+    alpha:0,
+    duration: 500,
+    delay:800,
+    ease: 'Quad.easeOut',
+    onComplete: ()=> {
+      this.activeTrickTexts-=1;
+      tx.destroy();
+      }
+    });
+  }
 }
 
-
-// HIT OBSTACLE (change in the future)
+//HIT OBSTACLE (change in the future)
 function hitObstacle() {
   this.alive = false;
   this.recoveryCount=0;
@@ -599,6 +577,7 @@ function hitObstacle() {
   this.add.text(W / 2, H * 0.35, 'FAILED!', {
     fontSize: '48px', fill: '#ff0000', fontFamily: '"Press Start 2P"'
   }).setOrigin(0.5).setScrollFactor(0).setDepth(30);
+  const finalScore =Math.floor(this.score/10);
   if(Math.floor(this.score/10) > this.highScore) {
     this.highScore=Math.floor(this.score/10);
   }
@@ -617,12 +596,6 @@ function hitObstacle() {
   this.time.delayedCall(2500, () => this.scene.start('MenuScene'));
 }
 
-// COLOR HELPERS
-function lerp(a, b, t) { return a + (b - a) * t; }
-function hexR(h) { return (h >> 16) & 0xff; }
-function hexG(h) { return (h >> 8)  & 0xff; }
-function hexB(h) { return  h        & 0xff; }
-
 // PHASER CONFIG
 const config = {
   type: Phaser.AUTO,
@@ -636,29 +609,5 @@ const config = {
   },
   scene: [MenuScene, GameScene]
 };
-
-function showTrickText(scene, text, points) {
-  const offsetY = scene.activeTrickTexts *30;
-  scene.activeTrickTexts +=1
-
-  const tx =scene.add.text (W/2, H *0.35 -offsetY, text + ' +' + points,{
-    fontSize:'14px',
-    fill: '#ffff00',
-    fontFamily: '"Press Start 2P"'
-}).setDepth(25).setScrollFactor(0).setOrigin(0.5);
-
-scene.tweens.add({
-  targets: tx,
-  y: H * 0.25,
-  alpha:0,
-  duration: 500,
-  delay: 800,
-  ease: 'Quad.easOut',
-  oncomplete: () => {
-    scene.activeTrickTexts -=1;
-    tx.destroy()
-  }
-});
-}
 
 const game = new Phaser.Game(config);
