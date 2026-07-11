@@ -500,23 +500,7 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
 
 
 
-    this.speedLines.clear();
 
-    if(this.skateSpeed > 280) {
-      for (let i=0; i <12; i++){
-
-        const x =this.skater.x - Phaser.Math.Between(50, 350);
-        const y =this.skater.y - Phaser.Math.Between(-80, 40);
-        const len = Phaser.Math.Between(20, 60);
-
-        this.speedLines.lineStyle(2, 0xffffff, 0.35);
-        this.speedLines.beginPath();
-        this.speedLines.moveTo(x, y);
-        this.speedLines.lineTo(x - len, y);
-        this.speedLines.strokePath();
-
-      }
-    }
   }
 
 //RECOVERY
