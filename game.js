@@ -425,8 +425,8 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
 
     if (this.isFlipping) {
       this.flipAngle += 18;
-      const displayAngle=this.currentTrick==='heelflip' ?-this.flipAngle : this.currentTrick==='shoveit' ? 0 : this.flipAngle;
-      const targetAngle= this.currentTrick=== 'shoveit' ? 180:360;
+      const displayAngle=this.currentTrick==='heelflip' ?-this.flipAngle : this.flipAngle;
+      const targetAngle= 360;
 
       this.player.update(this.cursors, true, displayAngle, body.velocity.y, this.currentTrick);
 
@@ -434,7 +434,12 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
         this.isFlipping = false;
         this.flipAngle  = 0;
         this.player.resetBoardAngle();
-        this.score += this.currentTrick ==='shoveit' ? 40:50;
+        const trickNames= {kickflip: 'KICKFLIP', heelflip: 'HEELFLIP', shoveit: 'POP SHUV'};
+        const trickPoints= {kickflip: 50, heelflip:50, shoveit:40};
+        const name=trickNames[this.currentTrick];
+        const pts =trickPoints[this.currentTrick];
+        showTrickText(this,name,pts);
+        this.score += pts;
         this.currentTrick=null;
       }
     } else {
@@ -551,5 +556,22 @@ const config = {
   },
   scene: [MenuScene, GameScene]
 };
+
+function showTrickText(scene, text, points) {
+  const tx =scene.add.text (scene.skater.x, scene.skater.y -60, text + ' +' + points,{
+    fontSize:'14px',
+    fill: '#ffff00',
+    fontFamily: '"Press Start 2P"'
+}).setDepth(25).setScrollFactor(0);
+
+scene.tweens.add({
+  targets: tx,
+  y: tx.y -40,
+  alpha:0,
+  duration: 800,
+  ease: 'Quad.easOut',
+  oncomplete: () => tx.destroy()
+});
+}
 
 const game = new Phaser.Game(config);
