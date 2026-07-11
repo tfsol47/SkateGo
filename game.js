@@ -359,6 +359,10 @@ class GameScene extends Phaser.Scene {
     this.onGround = body.blocked.down;
 
     if (!this.wasOnGround && this.onGround) {
+      if(this.combo >0) {
+        this.comboText.setText('');
+        this.combo=0;
+      }
       this.cameras.main.shake(60, 0.003);
       this.dust.explode(20, this.skater.x, this.skater.y + 30);
 
@@ -442,11 +446,13 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
         this.player.resetBoardAngle();
         const trickNames= {kickflip: 'KICKFLIP', heelflip: 'HEELFLIP', shoveit: 'POP SHUV'};
         const trickPoints= {kickflip: 50, heelflip:50, shoveit:40};
+        this.combo+=1;
         const name=trickNames[this.currentTrick];
-        const pts =trickPoints[this.currentTrick];
+        const pts =trickPoints[this.currentTrick] * this.combo;
         showTrickText(this,name,pts);
         this.score += pts;
         this.currentTrick=null;
+        this.comboText.setText('COMBO x' + this.combo);
       }
     } else {
       this.player.update(this.cursors, false, 0, body.velocity.y, null);
