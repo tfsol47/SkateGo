@@ -137,6 +137,15 @@ class GameScene extends Phaser.Scene {
    this.theme = data.theme || 'night'; 
   }
 
+  preload() {
+    this.load.image('bg1', 'bg1.png');
+    this.load.image('bg2', 'bg2.png');
+    this.load.image('bg3', 'bg3.png');
+    this.load.image('bg4', 'bg4.png');
+    this.load.image('bg5', 'bg5.png');
+
+  }
+
   create() {
     const theme = this.theme;
 
@@ -170,89 +179,13 @@ class GameScene extends Phaser.Scene {
         hudColor:'#ffaa00',
       };
     }
+//New bg
+    this.add.image(W/2,H/2, 'bg1').setScrollFactor(0).setDepth(0).setDisplaySize(W,H);
+    this.add.image(W/2,H/2, 'bg2').setScrollFactor(0.05).setDepth(1).setDisplaySize(W,H);
+    this.add.image(W/2,H/2, 'bg3').setScrollFactor(0.1).setDepth(2).setDisplaySize(W,H);
+    this.add.image(W/2,H/2, 'bg4').setScrollFactor(0.2).setDepth(3).setDisplaySize(W,H);
+    this.add.image(W/2,H/2, 'bg5').setScrollFactor(0.35).setDepth(4).setDisplaySize(W,H);
 
-    //GRADIENT SKY (fixed) 
-    const skyGfx = this.add.graphics().setScrollFactor(0).setDepth(0);
-    skyGfx.fillGradientStyle(C.skyTop,C.skyTop, C.skyBot,C.skyBot, 1,1,1,1);
-    skyGfx.fillRect(0,0,W,H);
-
-    //STARS (night only)
-    if (theme === 'night') {
-      const starGfx = this.add.graphics().setScrollFactor(0).setDepth(1);
-      for (let i = 0; i < 150; i++) {
-        const sx = Phaser.Math.Between(0, W);
-        const sy = Phaser.Math.Between(0, H * 0.75);
-        starGfx.fillStyle(0xffffff, Math.random() * 0.7 + 0.3);
-        starGfx.fillRect(sx, sy, Math.random() < 0.15 ? 2 : 1, Math.random() < 0.15 ? 2 : 1);
-      }
-    }
-
-    //MOON/SUN 
-    const moonGfx = this.add.graphics().setScrollFactor(0).setDepth(2);
-    if (theme === 'night') {
-      moonGfx.fillStyle(0xffffdd);
-      moonGfx.fillCircle(W * 0.78, H * 0.18, 44);
-      moonGfx.fillStyle(C.skyMid);
-      moonGfx.fillCircle(W * 0.78 + 18, H * 0.18 - 12, 36);
-    } else {
-      moonGfx.fillStyle(0xffee00, 0.15);
-      moonGfx.fillCircle(W * 0.72, H * 0.2, 80);
-      moonGfx.fillStyle(0xffdd00, 0.3);
-      moonGfx.fillCircle(W * 0.72, H * 0.2, 60);
-      moonGfx.fillStyle(0xffcc00);
-      moonGfx.fillCircle(W * 0.72, H * 0.2, 44);
-    }
-
-    //FAR BUILDINGS (fixed to camera) 
-    const FAR_BUILDING_COUNT=200;
-    const FAR_SPACING=120;
-    const totalFarWidth=(FAR_BUILDING_COUNT*FAR_SPACING) +500;
-    this.farGfx = this.add.graphics().setScrollFactor(0.1).setDepth(3);
-    this.farGfx.fillStyle(C.buildFar);
-    this.farGfx.fillRect(0, GROUND_Y - 10, totalFarWidth,10);
-    for (let i = 0; i < FAR_BUILDING_COUNT; i++) {
-      const bx = i * 120 + Phaser.Math.Between(0, 40);
-      const bh = Phaser.Math.Between(60, 160);
-      const bw = Phaser.Math.Between(40, 90);
-      const by = GROUND_Y - bh;
-      this.farGfx.fillStyle(C.buildFar);
-      this.farGfx.fillRect(bx, by, bw, bh);
-
-      for (let wy = by + 8; wy < GROUND_Y - 8; wy += 18) {
-        for (let wx = bx + 6; wx < bx + bw - 6; wx += 14) {
-          if (Math.random() > 0.45) {
-            this.farGfx.fillStyle(C.winFar, Math.random() * 0.8 + 0.2);
-            this.farGfx.fillRect(wx, wy, 7, 9);
-          }
-        }
-      }
-    }
-
-    //NEAR BUILDINGS (fixed to camera) 
-    const NEAR_BUILDING_COUNT=150;
-    const NEAR_SPACING=180;
-    const totalNearWidth=(NEAR_BUILDING_COUNT*NEAR_SPACING) +600;
-
-    this.nearGfx = this.add.graphics().setScrollFactor(0.3).setDepth(4);
-    this.nearGfx.fillStyle(C.buildNear);
-    this.nearGfx.fillRect(0, GROUND_Y - 6,totalNearWidth, 6);
-    for (let i = 0; i < 150; i++) {
-      const bx = i * 180 + Phaser.Math.Between(0, 60);
-      const bh = Phaser.Math.Between(100, 240);
-      const bw = Phaser.Math.Between(60, 130);
-      const by = GROUND_Y - bh;
-      this.nearGfx.fillStyle(C.buildNear);
-      this.nearGfx.fillRect(bx, by, bw, bh);
-
-      for (let wy = by + 12; wy < GROUND_Y - 8; wy += 22) {
-        for (let wx = bx + 8; wx < bx + bw - 8; wx += 18) {
-          if (Math.random() > 0.35) {
-            this.nearGfx.fillStyle(C.winNear, Math.random() * 0.9 + 0.1);
-            this.nearGfx.fillRect(wx, wy, 9, 12);
-          }
-        }
-      }
-    }
 
     // GROUND 
     const ground = this.physics.add.staticGroup();
