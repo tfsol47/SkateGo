@@ -446,7 +446,7 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
       this.skater.y=this.currentRail.y-34;
       this.skater.body.setVelocityY(0);
       this.grindScore += 1;
-      this.score+=0.5;
+      this.score+=0.3;
       this.sparks.emitParticleAt(this.skater.x,this.skater.y+30,3);
 
     //jump out grind
@@ -608,7 +608,7 @@ playNextTrack() {
     this.currentMusic.destroy();
   }
   const key = this.musicTracks[this.currentTrackIndex];
-  this.currentMusic=this.sound.add(key, {volume:0.4});
+  this.currentMusic=this.sound.add(key, {volume:0.7});
   this.currentMusic.play();
   this.currentMusic.on('complete', ()=>{
     this.currentTrackIndex=(this.currentTrackIndex+1)% this.musicTracks.length;
