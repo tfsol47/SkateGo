@@ -180,11 +180,11 @@ class GameScene extends Phaser.Scene {
       };
     }
 //New bg
-    this.add.image(W/2,H/2, 'bg1').setScrollFactor(0).setDepth(0).setDisplaySize(W,H);
-    this.add.image(W/2,H/2, 'bg2').setScrollFactor(0.05).setDepth(1).setDisplaySize(W,H);
-    this.add.image(W/2,H/2, 'bg3').setScrollFactor(0.1).setDepth(2).setDisplaySize(W,H);
-    this.add.image(W/2,H/2, 'bg4').setScrollFactor(0.2).setDepth(3).setDisplaySize(W,H);
-    this.add.image(W/2,H/2, 'bg5').setScrollFactor(0.35).setDepth(4).setDisplaySize(W,H);
+    this.bg1=this.add.tileSprite(0,0,W,H, 'bg1').setOrigin(0,0).setScrollFactor(0).setDepth(0);
+    this.bg2=this.add.tileSprite(0,0,W,H, 'bg2').setOrigin(0,0).setScrollFactor(0).setDepth(1);
+    this.bg3=this.add.tileSprite(0,0,W,H, 'bg3').setOrigin(0,0).setScrollFactor(0).setDepth(2);
+    this.bg4=this.add.tileSprite(0,0,W,H, 'bg4').setOrigin(0,0).setScrollFactor(0).setDepth(3);
+    this.bg5=this.add.tileSprite(0,0,W,H, 'bg5').setOrigin(0,0).setScrollFactor(0).setDepth(4);
 
 
     // GROUND 
@@ -296,6 +296,11 @@ class GameScene extends Phaser.Scene {
 
   update(time, delta) {
     if (!this.alive) return;
+    this.bg1.tilePositionX=this.skater.x *0.02;
+    this.bg2.tilePositionX=this.skater.x *0.05;
+    this.bg3.tilePositionX=this.skater.x *0.1;
+    this.bg4.tilePositionX=this.skater.x *0.2;
+    this.bg5.tilePositionX=this.skater.x *0.35;
     if (this.grindCooldown>0) {
       this.grindCooldown-=this.game.loop.delta;
     }
