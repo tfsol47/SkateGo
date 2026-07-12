@@ -438,10 +438,17 @@ body.setVelocityX(this.skateSpeed);
     // Jump only once when the key is first pressed
 if (
     (Phaser.Input.Keyboard.JustDown(this.cursors.up) || Phaser.Input.Keyboard.JustDown(this.cursors.space)) && 
-    this.coyoteTimer > 0 &&
+    (this.coyoteTimer > 0 || this.isGrinding) &&
     !this.recoveryActive) {
     body.setVelocityY(-750);
     this.coyoteTimer = 0;
+    if (this.isGrinding) {
+      this.isGrinding=false;
+      this.skater.body.setAllowGravity(true);
+      this.showTrickText('50-50 GRIND', Math.floor(this.grindScore));
+      this.grindCooldown=500;
+      this.grindScore=0;
+    }
 }
 
 // Cut the jump short if the player lets go early
