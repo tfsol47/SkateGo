@@ -336,7 +336,7 @@ class GameScene extends Phaser.Scene {
     this.activeTrickTexts=0;
     this.landedClean=true;
     this.comboTimer=0;
-    this.comboTimerMax=3000;
+    this.comboTimerMax=2250;
     this.combo=0;
 
     this.comboText = this.add.text(W/2, H*0.15, '', {
@@ -344,6 +344,8 @@ class GameScene extends Phaser.Scene {
       fill: '#ff6600',
       fontFamily:'"Press Start 2P"'
     }).setDepth(25).setScrollFactor(0).setOrigin(0.5);
+    this.comboBarBg=this.add.rectangle(W/2, H*0.12, 200, 8, 0x333333).setScrollFactor(0).setDepth(25).setVisible(false);
+    this.comboBar=this.add.rectangle(W/2-100, H*0.12, 200, 8,0xff6600).setScrollFactor(0).setDepth(26).setOrigin(0,0.5).setVisible(false);
     this.score = 0;
     this.scoreText = this.add.text(16, 16, 'SCORE: 0', {
       fontSize: '16px', fill: '#ffffff', fontFamily: '"Press Start 2P"'
@@ -395,16 +397,21 @@ class GameScene extends Phaser.Scene {
         yoyo: true,
         ease: 'Quad.easeOut'
       });
-      this.combo=0;
-      this.comboText.setText('');
     }
   }
       if (this.combo >0) {
         this.comboTimer-= this.game.loop.delta;
+        const progress=Math.max(this.comboTimer/this.comboTimerMax,0);
+        this.comboBar.width=200* progress;
+        this.comboBarBg.setVisible(true);
+        this.comboBar.setVisible(true);
         if (this.comboTimer <=0) {
-        this.comboText.setText('');
-        this.combo=0;
+        this.comboBarBg.setVisible(false);
+        this.comboBar.setVisible(false);
       }
+    } else {
+      this.comboBarBg.setVisible(false);
+      this.comboBar.setVisible(false);
     }
   
 
@@ -463,8 +470,8 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
       this.showTrickText('50-50 GRIND', Math.floor(this.grindScore));
       this.grindCooldown=500;
       this.grindScore=0;
-      this.combo=0;
       this.comboText.setText('');
+      
 
     }
 
@@ -475,8 +482,8 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
       this.showTrickText('50-50 GRIND', Math.floor(this.grindScore));
       this.grindCooldown=500;
       this.grindScore=0;
-      this.combo=0;
       this.comboText.setText('');
+     
     }
   }
     //trick inputs
