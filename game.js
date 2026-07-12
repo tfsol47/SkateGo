@@ -138,11 +138,32 @@ class GameScene extends Phaser.Scene {
   }
 
   preload() {
+    this.load.image('bg1','bg1.png');
     this.load.image('bg1', 'bg1.png');
     this.load.image('bg2', 'bg2.png');
     this.load.image('bg3', 'bg3.png');
     this.load.image('bg4', 'bg4.png');
     this.load.image('bg5', 'bg5.png');
+
+    this.load.image('sunset1', 'sunset1.png');
+    this.load.image('sunset2', 'sunset2.png');
+    this.load.image('sunset3', 'sunset3.png');
+    this.load.image('sunset4', 'sunset4.png');
+    this.load.image('sunset5', 'sunset5.png');
+
+    //music catalog, credits to kaibb on itch
+    this.load.audio('amoeba','music/amoeba.mp3');
+    this.load.audio('armillare', 'music/armillare.mp3');
+    this.load.audio('botanica', 'music/botanica.mp3');
+    this.load.audio('byrbot','music/byrbot.mp3');
+    this.load.audio('endless','music/endless.mp3');
+    this.load.audio('familiar_room', 'music/familiar_room.mp3');
+    this.load.audio('featherfall' ,'music/featherfall.mp3');
+    this.load.audio('forest_interior', 'music/forest_interior.mp3');
+    this.load.audio('gill','music/gill.mp3');
+    this.load.audio('glyph','music/glyph.mp3');
+    this.load.audio('heart_garden','music/heart_garden.mp3');
+
 
   }
 
@@ -159,8 +180,8 @@ class GameScene extends Phaser.Scene {
         buildNear:0x161630,
         winFar:0x00ffff,
         winNear:0x44ffff,
-        ground:0x00cc00,
-        groundDark:0x005500,
+        ground:0x1a1a2e,
+        groundDark:0x0d0d1a,
         obstacle:0xff0044,
         hudColor:'#00ffff',
       };
@@ -173,19 +194,26 @@ class GameScene extends Phaser.Scene {
         buildNear:0x1e0e00,
         winFar:0xffaa00,
         winNear:0xffcc44,
-        ground:0xaa5500,
-        groundDark:0x552200,
+        ground:0x2d1a00,
+        groundDark:0x1a0d00,
         obstacle:0x8b0000,
         hudColor:'#ffaa00',
       };
     }
 //New bg
+
+    const bg1key=theme==='night' ? 'bg1':'sunset1';
+    const bg2key=theme==='night' ? 'bg2':'sunset2';
+    const bg3key=theme==='night' ? 'bg3':'sunset3';
+    const bg4key=theme==='night' ? 'bg4':'sunset4';
+    const bg5key=theme==='night' ? 'bg5':'sunset5';
     this.bgScale=H/324;
-    this.bg1=this.add.tileSprite(0,0,W/this.bgScale,324, 'bg1').setOrigin(0,0).setScrollFactor(0).setScale(this.bgScale);
-    this.bg2=this.add.tileSprite(0,0,W/this.bgScale,324, 'bg2').setOrigin(0,0).setScrollFactor(0).setScale(this.bgScale);
-    this.bg3=this.add.tileSprite(0,0,W/this.bgScale,324, 'bg3').setOrigin(0,0).setScrollFactor(0).setScale(this.bgScale);
-    this.bg4=this.add.tileSprite(0,0,W/this.bgScale,324, 'bg4').setOrigin(0,0).setScrollFactor(0).setScale(this.bgScale);
-    this.bg5=this.add.tileSprite(0,0,W/this.bgScale,324, 'bg5').setOrigin(0,0).setScrollFactor(0).setScale(this.bgScale);
+
+    this.bg1=this.add.tileSprite(0,0,W/this.bgScale,324, bg1key).setOrigin(0,0).setScrollFactor(0).setDepth(0).setScale(this.bgScale);
+    this.bg2=this.add.tileSprite(0,0,W/this.bgScale,324, bg2key).setOrigin(0,0).setScrollFactor(0).setDepth(1).setScale(this.bgScale);
+    this.bg3=this.add.tileSprite(0,0,W/this.bgScale,324, bg3key).setOrigin(0,0).setScrollFactor(0).setDepth(2).setScale(this.bgScale);
+    this.bg4=this.add.tileSprite(0,0,W/this.bgScale,324, bg4key).setOrigin(0,0).setScrollFactor(0).setDepth(3).setScale(this.bgScale);
+    this.bg5=this.add.tileSprite(0,0,W/this.bgScale,324, bg5key).setOrigin(0,0).setScrollFactor(0).setDepth(4).setScale(this.bgScale);
 
 
 
@@ -266,6 +294,17 @@ class GameScene extends Phaser.Scene {
     this.wasOnGround = true;
     this.coyoteTime = 100;
     this.coyoteTimer = 0;
+    //Music
+    this.musicTracks=[
+      'amoeba', 'armillare','botanica','byrbot','endless','familiar_room',
+      'featherfall','forest_interior','gill','glyph','heart_garden'
+
+    ];
+
+    //shuffle songs
+    Phaser.Utils.Array.Shuffle(this.musicTracks);
+    this.currentTrackIndex=0;
+    this.playNextTrack();
 
     //Hud
     this.activeTrickTexts=0;
@@ -303,7 +342,7 @@ class GameScene extends Phaser.Scene {
     this.bg3.tilePositionX=this.skater.x *0.1/this.bgScale;
     this.bg4.tilePositionX=this.skater.x *0.2/this.bgScale;
     this.bg5.tilePositionX=this.skater.x *0.35/this.bgScale;
-    
+
     if (this.grindCooldown>0) {
       this.grindCooldown-=this.game.loop.delta;
     }
@@ -562,6 +601,19 @@ handleRecoveryInput() {
       onComplete:() => recovered.destroy()
     });
   } 
+}
+
+playNextTrack() {
+  if (this.currentMusic) {
+    this.currentMusic.destroy();
+  }
+  const key = this.musicTracks[this.currentTrackIndex];
+  this.currentMusic=this.sound.add(key, {volume:0.4});
+  this.currentMusic.play();
+  this.currentMusic.on('complete', ()=>{
+    this.currentTrackIndex=(this.currentTrackIndex+1)% this.musicTracks.length;
+    this.playNextTrack();
+  });
 }
 
 showTrickText(text, points) {
