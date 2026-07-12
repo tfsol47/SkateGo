@@ -701,7 +701,7 @@ const config = {
   roundPixels: true,
   physics: {
     default: 'arcade',
-    arcade: { gravity: { y: 1500 }, debug: false, }
+    arcade: { gravity: { y: 1500 }, debug: false, fixedStep:false}
   },
   scene: [MenuScene, GameScene]
 };
