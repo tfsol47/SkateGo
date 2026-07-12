@@ -18,14 +18,10 @@ class Player {
     this.leftLeg=scene.add.rectangle(-6, 0, 8, 20, 0xffffff);
     this.rightLeg=scene.add.rectangle(6, 0, 8, 20, 0xffffff);
 
-    this.boardSprite=scene.add.rectangle(0, 0, 44, 8, 0xff6600);
-    this.leftWheel=scene.add.circle(-14, 6, 5, 0x333333);
-    this.rightWheel=scene.add.circle(14, 6, 5, 0x333333);
+    this.boardSprite =scene.add.sprite(0,0,'board_cruise').setScale(1.5);
 
-    this.boardContainer=scene.add.container(0, 20, [
-      this.boardSprite,
-      this.leftWheel,
-      this.rightWheel
+    this.boardContainer=scene.add.container(0,20,[
+      this.boardSprite
     ]);
 
     this.container.add([
@@ -52,6 +48,7 @@ class Player {
   
 
   update(cursors, isFlipping, flipAngle, velocityY) {
+    this.boardSprite.play('cruise',true);
       this.container.x=Math.round(this.body.x);
       this.container.y=Math.round(this.body.y);
 
@@ -167,7 +164,7 @@ class GameScene extends Phaser.Scene {
     //board construct
     this.load.spritesheet('board_cruise', 'board_cruise.png', {
       frameWidth:30,
-      frameHeight:10
+      frameHeight:7
     });
     this.load.spritesheet('kickflip', 'kickflip.png', {
       frameWidth:30,
@@ -245,6 +242,12 @@ class GameScene extends Phaser.Scene {
     this.skater=this.player.body;
 
     this.speedLines = this.add.graphics().setDepth(6);
+//board cruising animation
+    this.anims.create({
+      key:'cruise',
+      frames:this.anims.generateFrameNumbers('board_cruise', {start:0, end:6}),
+      frameRate:12, repeat:-1
+    });
 
     //Dust when landing
     const px=this.make.graphics({x:0, y:0, add:false});
@@ -698,7 +701,7 @@ const config = {
   roundPixels: true,
   physics: {
     default: 'arcade',
-    arcade: { gravity: { y: 1500 }, debug: false }
+    arcade: { gravity: { y: 1500 }, debug: false, }
   },
   scene: [MenuScene, GameScene]
 };
