@@ -335,6 +335,8 @@ class GameScene extends Phaser.Scene {
     //Hud
     this.activeTrickTexts=0;
     this.landedClean=true;
+    this.comboTimer=0;
+    this.comboTimerMax=3000;
     this.combo=0;
 
     this.comboText = this.add.text(W/2, H*0.15, '', {
@@ -385,7 +387,6 @@ class GameScene extends Phaser.Scene {
       } else{
       this.cameras.main.shake(60, 0.003);
       this.dust.explode(20, this.skater.x, this.skater.y + 30);
-
       this.tweens.add({
         targets: [this.player.container],
         scaleY: 0.7,
@@ -394,13 +395,18 @@ class GameScene extends Phaser.Scene {
         yoyo: true,
         ease: 'Quad.easeOut'
       });
-
+      this.combo=0;
+      this.comboText.setText('');
+    }
+  }
       if (this.combo >0) {
+        this.comboTimer-= this.game.loop.delta;
+        if (this.comboTimer <=0) {
         this.comboText.setText('');
         this.combo=0;
       }
     }
-  }
+  
 
     this.wasOnGround = this.onGround;
 
@@ -457,17 +463,20 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
       this.showTrickText('50-50 GRIND', Math.floor(this.grindScore));
       this.grindCooldown=500;
       this.grindScore=0;
+      this.combo=0;
+      this.comboText.setText('');
 
     }
 
     //fell off the end of rail
     if (this.skater.x > this.currentRail.x+100) {
-      console.log('grindscore at exit:', this.grindScore);
       this.isGrinding=false;
       this.skater.body.setAllowGravity(true);
       this.showTrickText('50-50 GRIND', Math.floor(this.grindScore));
       this.grindCooldown=500;
       this.grindScore=0;
+      this.combo=0;
+      this.comboText.setText('');
     }
   }
     //trick inputs
@@ -511,6 +520,7 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
         const trickPoints= {kickflip: 50, heelflip:50, shoveit:40};
 
         this.combo+=1;
+        this.comboTimer=this.comboTimerMax;
         const name=trickNames[this.currentTrick];
         const pts =trickPoints[this.currentTrick] * this.combo;
 
