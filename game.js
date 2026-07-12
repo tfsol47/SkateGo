@@ -164,6 +164,17 @@ class GameScene extends Phaser.Scene {
     this.load.audio('glyph','music/glyph.mp3');
     this.load.audio('heart_garden','music/heart_garden.mp3');
 
+    //board construct
+    this.load.spritesheet('board_cruise', 'board_cruise.png', {
+      frameWidth:30,
+      frameHeight:10
+    });
+    this.load.spritesheet('kickflip', 'kickflip.png', {
+      frameWidth:30,
+      frameHeight:10
+
+    });
+
 
   }
 
@@ -446,7 +457,7 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
       this.skater.y=this.currentRail.y-34;
       this.skater.body.setVelocityY(0);
       this.grindScore += 1;
-      this.score+=0.3;
+      this.score+=0.01;
       this.sparks.emitParticleAt(this.skater.x,this.skater.y+30,3);
 
     //jump out grind
@@ -511,7 +522,7 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
         this.landedClean=true;
 
         const trickNames= {kickflip: 'KICKFLIP', heelflip: 'HEELFLIP', shoveit: 'POP SHUV'};
-        const trickPoints= {kickflip: 50, heelflip:50, shoveit:40};
+        const trickPoints= {kickflip: 10, heelflip:10, shoveit:8};
 
         this.combo+=1;
         this.comboTimer=this.comboTimerMax;
