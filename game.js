@@ -58,7 +58,9 @@ class Player {
           this.boardSprite.play('kickflip',true);
         }
        } else if (isManual) {
+        if (this.boardSprite.anims.currentAnim?.key !=='manual_start') {
           this.boardSprite.play('manual_start',true);
+        }
         } else{
           this.boardSprite.play('cruise',true);
        } 
