@@ -54,8 +54,12 @@ class Player {
       if (isFlipping) {
         this.container.angle=0;
         this.boardContainer.scaleX =1;
-        this.boardSprite.play('flip',true);
+        if (trickType==='heelflip'){
+        this.boardSprite.play('heelflip',true);
         } else{
+          this.boardSprite.play('kickflip',true);
+        }
+      }else{
           this.boardContainer.angle =0;
           this.boardContainer.scaleX=1;
           this.boardSprite.play('cruise',true);
@@ -166,10 +170,14 @@ class GameScene extends Phaser.Scene {
       frameWidth:30,
       frameHeight:7
     });
-    this.load.spritesheet('kickflip', 'kickflip.png', {
+    this.load.spritesheet('heelflip', 'heelflip.png', {
       frameWidth:30,
       frameHeight:10
 
+    });
+    this.load.spritesheet('kickflip','kickflip.png',{
+      frameWidth:30,
+      frameHeight:10
     });
 
 
@@ -251,12 +259,21 @@ class GameScene extends Phaser.Scene {
       
     });
   }
-  //kickflip animation
-  if (!this.anims.exists('flip')) {
+  //heelflip animation
+  if (!this.anims.exists('heelflip')) {
     this.anims.create({
-      key: 'flip', frames:this.anims.generateFrameNumbers('kickflip',{start:0,end:8}),
+      key: 'heelflip', frames:this.anims.generateFrameNumbers('heelflip',{start:0,end:8}),
       frameRate:18, repeat:0
     });
+  }
+
+  //kickflip animation
+  if (!this.anims.exists('kickflip')) {
+    this.anims.create({
+      key:'kickflip', frames:this.anims.generateFrameNumbers('kickflip',{start:0, end:8}),
+      frameRate:18,
+      repeat:0
+    })
   }
 
     //Dust when landing
@@ -526,7 +543,7 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
       const displayAngle=this.currentTrick==='heelflip' ?-this.flipAngle : this.flipAngle;
       const targetAngle= 360;
 
-      this.player.update(this.cursors, true, displayAngle, body.velocity.y);
+      this.player.update(this.cursors, true, displayAngle, body.velocity.y, this.currentTrick);
 
       if (this.flipAngle >= targetAngle) {
         this.isFlipping = false;
@@ -548,7 +565,7 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
         this.comboText.setText('COMBO x' + this.combo);
       }
     } else {
-      this.player.update(this.cursors, false, 0, body.velocity.y);
+      this.player.update(this.cursors, false, 0, body.velocity.y, null);
     }
 
     // spawn obstacles
