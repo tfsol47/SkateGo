@@ -98,10 +98,6 @@ class MenuScene extends Phaser.Scene {
 
     //bg for text
     this.add.rectangle(0,0,W,H, 0x000000,0.25).setOrigin(0,0).setDepth(5);
-    
-    if (!this.registry.has('highscore')) {
-      this.registry.set('highscore', 0);
-    }
 
     this.add.text(W / 2, H * 0.2, 'SKATE GO', {
       fontSize: '48px', fill: '#ffffff', fontFamily: '"Press Start 2P"'
@@ -222,6 +218,7 @@ class GameScene extends Phaser.Scene {
 
     //obstacles/bench
     this.load.image('bench', 'bench.png');
+    this.load.image('cone', 'cone.png');
 
   }
 
@@ -425,7 +422,7 @@ class GameScene extends Phaser.Scene {
     this.speedText = this.add.text(16, 44, 'SPEED: 1', {
       fontSize: '16px', fill: C.hudColor, fontFamily: '"Press Start 2P"'
     }).setScrollFactor(0).setDepth(20);
-    this.highScore=this.registry.get('highscore');
+    this.highScore=0;
 
     //Pause
     this.pauseKey= this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
