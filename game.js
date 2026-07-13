@@ -127,12 +127,20 @@ class MenuScene extends Phaser.Scene {
     sunsetBtn.on('pointerover', () => sunsetBtn.setFillStyle(0x4d3b00));
     sunsetBtn.on('pointerout',  () => sunsetBtn.setFillStyle(0x2d1b00));
 
-    nightBtn.on('pointerdown',  () => this.scene.start('GameScene', { theme: 'night' }));
-    sunsetBtn.on('pointerdown', () => this.scene.start('GameScene', { theme: 'sunset' }));
+    nightBtn.on('pointerdown',  () =>{
+      this.cameras.main.fade(800,0,0,0);
+      this.time.delayedCall(800,() => this.scene.start('GameScene', { theme: 'night' }));
+    });
+    sunsetBtn.on('pointerdown', () =>{
+      this.cameras.main.fade(1200,0,0,0);
+      this.time.delayedCall(1200, ()=> this.scene.start('GameScene', { theme: 'sunset' }));
+    });
 
     this.add.text(W / 2, H * 0.8, 'SPACE / ARROW UP = JUMP  M = MANUAL   K = KICKFLIP\n    ARROW DOWN = POWERSLIDE  H = HEELFLIP', {
       fontSize: '12px', fill: '#939393', fontFamily: '"Press Start 2P"'
     }).setOrigin(0.5);
+
+    this.cameras.main.fadeIn(1200,0,0,0);
   }
 
 preload() {
@@ -210,6 +218,9 @@ class GameScene extends Phaser.Scene {
     this.load.audio('death2','death2.ogg');
     this.load.audio('grind','grind.ogg');
     this.load.audio('whoosh','whoosh.mp3');
+
+    //obstacles/bench
+    this.load.image('bench', 'bench.png');
 
   }
 
@@ -653,10 +664,10 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
     }
 
     if (this.skater.x+600 > this.nextRailX) {
-      const rail=this.add.rectangle(this.nextRailX, GROUND_Y-80, 200,8,0x888888).setDepth(7);
+      const rail=this.add.image(this.nextRailX, GROUND_Y-46, 'bench').setDepth(7).setScale(2);
       this.physics.add.existing(rail,true);
       this.rails.add(rail);
-      this.nextRailX+=Phaser.Math.Between(800,1400);
+      this.nextRailX+=Phaser.Math.Between(1200,2000);
     }
 
     this.score += 1;
@@ -790,7 +801,8 @@ function hitObstacle() {
   }).setOrigin(0.5).setScrollFactor(0).setDepth(30);
   
   this.input.keyboard.once('keydown', ()=> {
-    this.scene.start('MenuScene');
+    this.cameras.main.fade(1200,0,0,0);
+    this.time.delayedCall(1200, ()=> this.scene.start('MenuScene'));
   });
 }
 
