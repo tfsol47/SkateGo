@@ -47,21 +47,19 @@ class Player {
   }
   
 
-  update(cursors, isFlipping, flipAngle, velocityY, trickType) {
+  update(cursors, isFlipping, flipAngle, velocityY, trickType, isManual) {
       this.container.x=Math.round(this.body.x);
       this.container.y=Math.round(this.body.y);
 
       if (isFlipping) {
-        this.container.angle=0;
-        this.boardContainer.scaleX =1;
         if (trickType==='heelflip'){
         this.boardSprite.play('heelflip',true);
         } else{
           this.boardSprite.play('kickflip',true);
         }
-      }else{
-          this.boardContainer.angle =0;
-          this.boardContainer.scaleX=1;
+       } else if (isManual) {
+          this.boardSprite.play('manual_start',true);
+        } else{
           this.boardSprite.play('cruise',true);
        } 
 
@@ -179,6 +177,11 @@ class GameScene extends Phaser.Scene {
       frameWidth:30,
       frameHeight:10
     });
+    this.load.spritesheet('manual', 'manual.png', {
+      frameWidth:30,
+      frameHeight:13
+    });
+
 
 
   }
@@ -276,6 +279,17 @@ class GameScene extends Phaser.Scene {
     })
   }
 
+  //manual animation
+  if (!this.anims.exists('manual')) {
+    this.anims.create({
+      key:'manual_start',frames:this.anims.generateFrameNumbers('manual',{start:0,end:3}),
+      frameRate:12,
+      repeat:0
+    });
+  }
+  this.isManual=false;
+  this.manualScore=0;
+
     //Dust when landing
     const px=this.make.graphics({x:0, y:0, add:false});
     px.fillStyle(0xffffff);
@@ -324,10 +338,11 @@ class GameScene extends Phaser.Scene {
 
 
     //Controls
-    this.cursors     = this.input.keyboard.createCursorKeys();
+    this.cursors= this.input.keyboard.createCursorKeys();
     this.kickflipKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.K);
     this.heelflipKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.H);
     this.shoveitKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S);
+    this.manualKey=this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.M)
 
     this.isFlipping  = false;
     this.flipAngle   = 0;
@@ -446,7 +461,23 @@ class GameScene extends Phaser.Scene {
 
     const baseSpeed = Math.min(250 + Math.floor(this.score / 100) * 15, 600);
 
-    if(this.recoveryActive){
+    
+    if(Phaser.Input.Keyboard.JustDown(this.manualKey)&& this.onGround) {
+      this.isManual=true;
+      this.manualScore=0;
+    }
+
+    if(!this.manualKey.isDown || !this.onGround) {
+      if (this.isManual && this.manualScore>0) {
+        this.showTrickText('Manual', Math.floor(this.manualScore));
+      }
+      this.isManual=false;
+    }
+    if (this.isManual) {
+      this.manualScore+=0.5;
+    }
+
+   if(this.recoveryActive){
       this.skateSpeed=30;
     } else if (this.cursors.down.isDown && this.onGround) {
   this.skateSpeed = Math.max(80, (this.skateSpeed || baseSpeed) * 0.985);
@@ -543,7 +574,7 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
       const displayAngle=this.currentTrick==='heelflip' ?-this.flipAngle : this.flipAngle;
       const targetAngle= 360;
 
-      this.player.update(this.cursors, true, displayAngle, body.velocity.y, this.currentTrick);
+      this.player.update(this.cursors, true, displayAngle, body.velocity.y, this.currentTrick,false);
 
       if (this.flipAngle >= targetAngle) {
         this.isFlipping = false;
@@ -565,7 +596,7 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
         this.comboText.setText('COMBO x' + this.combo);
       }
     } else {
-      this.player.update(this.cursors, false, 0, body.velocity.y, null);
+      this.player.update(this.cursors, false, 0, body.velocity.y, null,this.isManual);
     }
 
     // spawn obstacles
