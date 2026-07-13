@@ -34,16 +34,12 @@ class Player {
     
 
     this.onGround=false;
-    this.wasOnGround=false;
     this.isFlipping=false;
     this.recoveryCount=0;
     this.flipAngle=0;
     this.coyoteTime=180;
     this.coyoteTimer=0;
-    this.jumpForce=800;
-    this.speed=250;
     this.isGrinding=false;
-    this.combo=0;
   }
   
 
@@ -295,7 +291,6 @@ class GameScene extends Phaser.Scene {
     this.player =new Player(this, 100, SKATER_START_Y);
     this.skater=this.player.body;
 
-    this.speedLines = this.add.graphics().setDepth(6);
 //board cruising animation
   if (!this.anims.exists('cruise')) {
     this.anims.create({
