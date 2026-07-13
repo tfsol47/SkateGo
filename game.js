@@ -287,7 +287,7 @@ class GameScene extends Phaser.Scene {
   }
 
   //manual animation
-  if (!this.anims.exists('manual')) {
+  if (!this.anims.exists('manual_start')) {
     this.anims.create({
       key:'manual_start',frames:this.anims.generateFrameNumbers('manual',{start:0,end:3}),
       frameRate:12,
@@ -713,10 +713,11 @@ showTrickText(text, points) {
 
 //HIT OBSTACLE (change in the future)
 function hitObstacle() {
+  if (!this.alive) return;
   this.alive = false;
   this.cruisingSound.stop();
   const deathSound=Phaser.Math.Between(1,2);
-  this.sound.play('death' +deathSound, {volume:0.3});
+  this.sound.play('death' +deathSound, {volume:0.075});
   this.recoveryCount=0;
   this.skater.body.setVelocityX(0);
 
