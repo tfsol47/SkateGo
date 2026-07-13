@@ -94,6 +94,9 @@ class MenuScene extends Phaser.Scene {
     this.add.image(W/2,H/2,'bg3').setDisplaySize(W,H).setDepth(0);
     this.add.image(W/2,H/2,'bg4').setDisplaySize(W,H).setDepth(0);
     this.add.image(W/2,H/2,'bg5').setDisplaySize(W,H).setDepth(0);
+
+    //bg for text
+    this.add.rectangle(0,0,W,H, 0x000000,0.25).setOrigin(0,0).setDepth(5);
     
     if (!this.registry.has('highscore')) {
       this.registry.set('highscore', 0);
@@ -104,7 +107,7 @@ class MenuScene extends Phaser.Scene {
     }).setOrigin(0.5);
 
     this.add.text(W / 2, H * 0.35, 'CHOOSE YOUR CITY', {
-      fontSize: '20px', fill: '#a1a1a1', fontFamily: '"Press Start 2P"'
+      fontSize: '20px', fill: '#ababab', fontFamily: '"Press Start 2P"'
     }).setOrigin(0.5);
 
     //Night city
@@ -116,7 +119,7 @@ class MenuScene extends Phaser.Scene {
     //sunset suburb
     const sunsetBtn = this.add.rectangle(W / 2 + 200, H * 0.55, 320, 80, 0x2d1b00).setInteractive();
     this.add.text(W / 2 + 200, H * 0.55, 'SUNSET\nSUBURB', {
-      fontSize: '18px', fill: '#ff6600', fontFamily: '"Press Start 2P"', align: 'center'
+      fontSize: '18px', fill: '#f86300', fontFamily: '"Press Start 2P"', align: 'center'
     }).setOrigin(0.5);
 
     nightBtn.on('pointerover',  () => nightBtn.setFillStyle(0x2a2a4e));
@@ -128,7 +131,7 @@ class MenuScene extends Phaser.Scene {
     sunsetBtn.on('pointerdown', () => this.scene.start('GameScene', { theme: 'sunset' }));
 
     this.add.text(W / 2, H * 0.8, 'SPACE / ARROW UP = JUMP  M = MANUAL   K = KICKFLIP\n    ARROW DOWN = POWERSLIDE  H = HEELFLIP', {
-      fontSize: '12px', fill: '#555555', fontFamily: '"Press Start 2P"'
+      fontSize: '12px', fill: '#939393', fontFamily: '"Press Start 2P"'
     }).setOrigin(0.5);
   }
 
