@@ -47,7 +47,7 @@ class Player {
   }
   
 
-  update(cursors, isFlipping, flipAngle, velocityY, trickType, isManual) {
+  update(cursors, isFlipping, flipAngle, velocityY, trickType, isManual, isGrinding) {
       this.container.x=Math.round(this.body.x);
       this.container.y=Math.round(this.body.y);
 
@@ -64,9 +64,14 @@ class Player {
         } else{
           this.boardSprite.play('cruise',true);
        } 
-
-       if (!this.onGround) {
+       
+       if (isGrinding) {
+        this.container.angle=0;
+       } else if (!this.onGround) {
+        this.container.angle=0;
         this.container.angle=Phaser.Math.Clamp(velocityY * 0.04, -20, 20);
+      } else if (isManual) {
+        this.container.angle=15;
       } else if (cursors.down.isDown) {
         this.container.angle =12; //Powersliding tilt
       } else{
@@ -564,11 +569,13 @@ if (
       this.isGrinding=false;
       this.currentRail=null;
       this.skater.body.setAllowGravity(true);
+      this.skater.body.setVelocityY(-400);
       this.showTrickText('50-50 GRIND', Math.floor(this.grindScore));
       this.grindCooldown=500;
       this.grindScore=0;
       this.comboText.setText('');
       if (this.grindSound) this.grindSound.stop();
+      
     }
 }
 
@@ -578,14 +585,13 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
 }
 //gravity multiplier
 //keep 1.04 for now may change later
-  if (body.velocity.y >0) {
+  if (body.velocity.y >0 && !this.isGrinding) {
     body.setVelocityY(body.velocity.y * 1.04);
 }
 
     //grinding
     if (this.isGrinding) {
-      this.skater.y=this.currentRail.y-34;
-      this.skater.body.setVelocityY(0);
+      this.skater.y=this.currentRail.y- (this.currentRail.height*this.currentRail.scaleY/2)-30;
       this.grindScore += 1;
       this.score+=0.01;
       this.sparks.emitParticleAt(this.skater.x,this.skater.y+30,3);
@@ -629,7 +635,7 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
       const displayAngle=this.currentTrick==='heelflip' ?-this.flipAngle : this.flipAngle;
       const targetAngle= 360;
 
-      this.player.update(this.cursors, true, displayAngle, body.velocity.y, this.currentTrick,false);
+      this.player.update(this.cursors, true, displayAngle, body.velocity.y, this.currentTrick,false, this.isGrinding);
 
       if (this.flipAngle >= targetAngle) {
         this.isFlipping = false;
@@ -651,7 +657,7 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
         this.comboText.setText('COMBO x' + this.combo);
       }
     } else {
-      this.player.update(this.cursors, false, 0, body.velocity.y, null,this.isManual);
+      this.player.update(this.cursors, false, 0, body.velocity.y, null,this.isManual,this.isGrinding);
     }
 
     // spawn obstacles
@@ -666,8 +672,11 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
     if (this.skater.x+600 > this.nextRailX) {
       const rail=this.add.image(this.nextRailX, GROUND_Y-46, 'bench').setDepth(7).setScale(2);
       this.physics.add.existing(rail,true);
+      rail.body.setSize(64*2,46*2);
+      rail.body.reset(this.nextRailX, GROUND_Y-46);
       this.rails.add(rail);
       this.nextRailX+=Phaser.Math.Between(1200,2000);
+
     }
 
     this.score += 1;
@@ -809,6 +818,7 @@ function hitObstacle() {
 function startGrind(skater,rail) {
   if (this.isGrinding) return;
   if (this.grindCooldown>0) return;
+  skater.y=rail.y- (rail.height*rail.scaleY/2)-30;
   if (this.grindSound) this.grindSound.stop();
   this.grindSound=this.sound.add('grind',{loop:true, volume:0.3});
   this.grindSound.play();
@@ -816,7 +826,7 @@ function startGrind(skater,rail) {
   this.currentRail=rail;
   skater.body.velocityY=0;
   skater.body.setAllowGravity(false);
-  skater.y=rail.y-34;
+  skater.y=rail.y -(rail.height *rail.scaleY/2)-30;
 }
 
 // PHASER CONFIG
