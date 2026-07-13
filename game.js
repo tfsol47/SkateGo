@@ -396,6 +396,9 @@ class GameScene extends Phaser.Scene {
     }).setScrollFactor(0).setDepth(20);
     this.highScore=this.registry.get('highscore');
 
+    //Pause
+    
+
     //Camera
     this.cameras.main.startFollow(this.skater, true, 0.1, 0.1);
     this.cameras.main.setFollowOffset(-W * 0.18, 0);
@@ -740,7 +743,13 @@ function hitObstacle() {
     fontSize: '14px', fill: '#aaaaaa', fontFamily: '"Press Start 2P"'
   }).setOrigin(0.5).setScrollFactor(0).setDepth(30);
 
-  this.time.delayedCall(2500, () => this.scene.start('MenuScene'));
+  this.add.text(W/2, H*0.72, 'PRESS ANY KEY TO CONTINUE', {
+    fontSize:'12px', fill:'#ffffff', fontFamily:'"Press Start 2P"'
+  }).setOrigin(0.5).setScrollFactor(0).setDepth(30);
+  
+  this.input.keyboard.once('keydown', ()=> {
+    this.scene.start('MenuScene');
+  });
 }
 
 function startGrind(skater,rail) {
