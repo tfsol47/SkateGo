@@ -654,8 +654,8 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
 
     // spawn obstacles
     if (this.skater.x + 500 > this.nextObstacleX) {
-      const h = Phaser.Math.Between(30, 70);
-      const obs = this.add.rectangle(this.nextObstacleX, GROUND_Y - h / 2,30, h, this.obstacleColor).setDepth(7);
+      const obsX = this.nextObstacleX;
+      const obs = this.add.image(obsX, GROUND_Y - 38,'cone').setDepth(7).setScale(1.5);
       this.physics.add.existing(obs, true);
       this.obstacles.add(obs);
       this.nextObstacleX += Phaser.Math.Between(500, 900);
