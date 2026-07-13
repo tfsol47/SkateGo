@@ -506,10 +506,13 @@ if (
     this.coyoteTimer = 0;
     if (this.isGrinding) {
       this.isGrinding=false;
+      this.currentRail=null;
       this.skater.body.setAllowGravity(true);
       this.showTrickText('50-50 GRIND', Math.floor(this.grindScore));
       this.grindCooldown=500;
       this.grindScore=0;
+      this.comboText.setText('');
+      if (this.grindSound) this.grindSound.stop();
     }
 }
 
@@ -531,22 +534,12 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
       this.score+=0.01;
       this.sparks.emitParticleAt(this.skater.x,this.skater.y+30,3);
 
-    //jump out grind
-    if(Phaser.Input.Keyboard.JustDown(this.cursors.up) || Phaser.Input.Keyboard.JustDown(this.cursors.space)) {
-      this.isGrinding=false;
-      this.skater.body.setAllowGravity(true);
-      this.skater.body.setVelocityY(-700);
-      this.showTrickText('50-50 GRIND', Math.floor(this.grindScore));
-      this.grindCooldown=500;
-      this.grindScore=0;
-      this.comboText.setText('');
-      if (this.grindSound) this.grindSound.stop();
-
     }
 
     //fell off the end of rail
-    if (this.skater.x > this.currentRail.x+100) {
+    if (this.currentRail && this.currentRail && this.skater.x > this.currentRail.x+100) {
       this.isGrinding=false;
+      this.currentRail=null;
       this.skater.body.setAllowGravity(true);
       this.showTrickText('50-50 GRIND', Math.floor(this.grindScore));
       this.grindCooldown=500;
@@ -554,7 +547,7 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
       this.comboText.setText('');
      if (this.grindSound) this.grindSound.stop();
     }
-  }
+  
     //trick inputs
     if (!this.onGround && !this.isFlipping) {
       const kickHeld= this.kickflipKey.isDown;
