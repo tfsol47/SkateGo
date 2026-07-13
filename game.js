@@ -13,10 +13,7 @@ class Player {
 //REMEMEBER TO SWAP FOR ACTUAL SPRITES
     this.container=scene.add.container(x, y).setDepth(9);
 
-    this.bodySprite=scene.add.rectangle(0, -25, 24, 30, 0xffffff);
-    this.headSprite = scene.add.circle(0, -45, 12, 0xffd700);
-    this.leftLeg=scene.add.rectangle(-6, 0, 8, 20, 0xffffff);
-    this.rightLeg=scene.add.rectangle(6, 0, 8, 20, 0xffffff);
+    this.skaterSprite=scene.add.sprite(0,-36, 'skater_cruise').setScale(2);
 
     this.boardSprite =scene.add.sprite(0,0,'board_cruise').setScale(2.5);
 
@@ -25,10 +22,7 @@ class Player {
     ]);
 
     this.container.add([
-      this.bodySprite,
-      this.headSprite,
-      this.leftLeg,
-      this.rightLeg,
+      this.skaterSprite,
       this.boardContainer
     ]);
     
@@ -58,6 +52,9 @@ class Player {
           this.boardSprite.play('manual_start',true);
         }
         } else{
+          this.boardContainer.angle=0;
+          this.boardContainer.scaleX=1;
+          this.skaterSprite.play('skater_cruise',true);
           this.boardSprite.play('cruise',true);
        } 
        
@@ -220,6 +217,14 @@ class GameScene extends Phaser.Scene {
     this.load.image('bench', 'bench.png');
     this.load.image('cone', 'cone.png');
 
+    //skatersprite
+    this.load.spritesheet('push','push.png', {
+      frameWidth:24, frameHeight:30
+    });
+    this.load.spritesheet('skater_cruise','cruise.png',{
+      frameWidth:30, frameHeight:56
+    });
+
   }
 
   create() {
@@ -321,9 +326,23 @@ class GameScene extends Phaser.Scene {
       frameRate:12,
       repeat:0
     });
+
   }
   this.isManual=false;
   this.manualScore=0;
+
+  //skater animations
+  if(!this.anims.exists('push')) {
+    this.anims.create({
+      key:'push', frames:this.anims.generateFrameNumbers('push', {start:0,end:6}), frameRate:12, repeat:-1
+    });
+  }
+
+  if(!this.anims.exists('skater_cruise')) {
+    this.anims.create({
+      key:'skater_cruise', frames:this.anims.generateFrameNumbers('skater_cruise', {start:0,end:2}), frameRate:8, repeat:-1
+    });
+  }
 
   //cruising sound effect
   this.cruisingSound=this.sound.add('cruising',{loop:true,volume:0.2});
