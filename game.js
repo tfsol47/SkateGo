@@ -397,7 +397,8 @@ class GameScene extends Phaser.Scene {
     this.highScore=this.registry.get('highscore');
 
     //Pause
-    
+    this.pauseKey= this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
+    this.isPaused=false;
 
     //Camera
     this.cameras.main.startFollow(this.skater, true, 0.1, 0.1);
@@ -406,6 +407,27 @@ class GameScene extends Phaser.Scene {
 
   update(time, delta) {
     if (!this.alive) return;
+    if (Phaser.Input.Keyboard.JustDown(this.pauseKey)) {
+      if(this.isPaused) {
+        this.isPaused=false;
+        this.physics.resume();
+        this.cruisingSound.resume();
+        if (this.currentMusic) this.currentMusic.resume();
+        this.pauseText.destroy();
+      } else {
+        this.isPaused=true;
+        this.physics.pause();
+        this.cruisingSound.pause();
+        this.cruisingSound.pause();
+        if (this.currentMusic) this.currentMusic.pause();
+        this.pauseText=this.add.text(W/2,H/2, 'PAUSED\n\nPRESS ESC TO RESUME', {
+          fontSize: '24px', fill: '#ffffff', fontFamily: '"Press Start 2P"', align:'center'
+        }).setOrigin(0.5).setScrollFactor(0).setDepth(50);
+      }
+    }
+
+    if (this.isPaused) return;
+
     this.bg1.tilePositionX=this.skater.x *0.02/this.bgScale;
     this.bg2.tilePositionX=this.skater.x *0.05/this.bgScale;
     this.bg3.tilePositionX=this.skater.x *0.1/this.bgScale;
