@@ -13,13 +13,14 @@ class Player {
 //REMEMEBER TO SWAP FOR ACTUAL SPRITES
     this.container=scene.add.container(x, y).setDepth(9);
 
-    this.skaterSprite=scene.add.sprite(0,-36, 'skater_cruise').setScale(2);
+    this.skaterSprite=scene.add.sprite(0,-16, 'skater_cruise').setScale(3);
 
     this.boardSprite =scene.add.sprite(0,0,'board_cruise').setScale(2.5);
 
     this.boardContainer=scene.add.container(0,20,[
       this.boardSprite
     ]);
+
 
     this.container.add([
       this.skaterSprite,
@@ -34,6 +35,7 @@ class Player {
     this.coyoteTime=180;
     this.coyoteTimer=0;
     this.isGrinding=false;
+    this.lastAnim='skater_cruise'
   }
   
 
@@ -54,7 +56,11 @@ class Player {
         } else{
           this.boardContainer.angle=0;
           this.boardContainer.scaleX=1;
-          this.skaterSprite.play('skater_cruise',true);
+          if (!this.skaterSprite.anims.isPlaying) {
+            const nextAnim=this.lastAnim==='push' ? 'skater_cruise' : 'push';
+            this.lastAnim=nextAnim;
+            this.skaterSprite.play(nextAnim);
+          }
           this.boardSprite.play('cruise',true);
        } 
        
@@ -334,13 +340,13 @@ class GameScene extends Phaser.Scene {
   //skater animations
   if(!this.anims.exists('push')) {
     this.anims.create({
-      key:'push', frames:this.anims.generateFrameNumbers('push', {start:0,end:6}), frameRate:12, repeat:-1
+      key:'push', frames:this.anims.generateFrameNumbers('push', {start:0,end:6}), frameRate:12, repeat:0
     });
   }
 
   if(!this.anims.exists('skater_cruise')) {
     this.anims.create({
-      key:'skater_cruise', frames:this.anims.generateFrameNumbers('skater_cruise', {start:0,end:2}), frameRate:8, repeat:-1
+      key:'skater_cruise', frames:this.anims.generateFrameNumbers('skater_cruise', {start:0,end:2}), frameRate:8, repeat:0
     });
   }
 
