@@ -18,7 +18,7 @@ class Player {
     this.leftLeg=scene.add.rectangle(-6, 0, 8, 20, 0xffffff);
     this.rightLeg=scene.add.rectangle(6, 0, 8, 20, 0xffffff);
 
-    this.boardSprite =scene.add.sprite(0,0,'board_cruise').setScale(1.5);
+    this.boardSprite =scene.add.sprite(0,0,'board_cruise').setScale(2.5);
 
     this.boardContainer=scene.add.container(0,20,[
       this.boardSprite
@@ -47,18 +47,18 @@ class Player {
   }
   
 
-  update(cursors, isFlipping, flipAngle, velocityY) {
-    this.boardSprite.play('cruise',true);
+  update(cursors, isFlipping, flipAngle, velocityY, trickType) {
       this.container.x=Math.round(this.body.x);
       this.container.y=Math.round(this.body.y);
 
       if (isFlipping) {
         this.container.angle=0;
         this.boardContainer.scaleX =1;
-        this.boardContainer.angle=flipAngle;
+        this.boardSprite.play('flip',true);
         } else{
           this.boardContainer.angle =0;
           this.boardContainer.scaleX=1;
+          this.boardSprite.play('cruise',true);
        } 
 
        if (!this.onGround) {
@@ -243,11 +243,21 @@ class GameScene extends Phaser.Scene {
 
     this.speedLines = this.add.graphics().setDepth(6);
 //board cruising animation
+  if (!this.anims.exists('cruise')) {
     this.anims.create({
       key:'cruise',
       frames:this.anims.generateFrameNumbers('board_cruise', {start:0, end:6}),
       frameRate:12, repeat:-1
+      
     });
+  }
+  //kickflip animation
+  if (!this.anims.exists('flip')) {
+    this.anims.create({
+      key: 'flip', frames:this.anims.generateFrameNumbers('kickflip',{start:0,end:8}),
+      frameRate:18, repeat:0
+    });
+  }
 
     //Dust when landing
     const px=this.make.graphics({x:0, y:0, add:false});
