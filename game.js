@@ -87,7 +87,13 @@ class MenuScene extends Phaser.Scene {
      super({ key: 'MenuScene' }); }
 
   create() {
-    this.add.rectangle(0, 0, W, H, 0x000000).setOrigin(0, 0);
+    const bgScale=H/324;
+
+    this.add.image(W/2,H/2,'bg1').setDisplaySize(W,H).setDepth(0);
+    this.add.image(W/2,H/2,'bg2').setDisplaySize(W,H).setDepth(0);
+    this.add.image(W/2,H/2,'bg3').setDisplaySize(W,H).setDepth(0);
+    this.add.image(W/2,H/2,'bg4').setDisplaySize(W,H).setDepth(0);
+    this.add.image(W/2,H/2,'bg5').setDisplaySize(W,H).setDepth(0);
     
     if (!this.registry.has('highscore')) {
       this.registry.set('highscore', 0);
@@ -125,6 +131,17 @@ class MenuScene extends Phaser.Scene {
       fontSize: '12px', fill: '#555555', fontFamily: '"Press Start 2P"'
     }).setOrigin(0.5);
   }
+
+preload() {
+  this.load.image('bg1','bg1.png');
+  this.load.image('bg2','bg2.png');
+  this.load.image('bg3','bg3.png');
+  this.load.image('bg4','bg4.png');
+  this.load.image('bg5','bg5.png');
+}
+
+
+
 
 }
 
