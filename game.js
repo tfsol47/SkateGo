@@ -121,7 +121,7 @@ class MenuScene extends Phaser.Scene {
     nightBtn.on('pointerdown',  () => this.scene.start('GameScene', { theme: 'night' }));
     sunsetBtn.on('pointerdown', () => this.scene.start('GameScene', { theme: 'sunset' }));
 
-    this.add.text(W / 2, H * 0.8, 'SPACE / ARROW UP = JUMP          K = KICKFLIP\n ARROW DOWN = POWERSLIDE  H = HEELFLIP  S = SHOVE IT', {
+    this.add.text(W / 2, H * 0.8, 'SPACE / ARROW UP = JUMP  M = MANUAL   K = KICKFLIP\n    ARROW DOWN = POWERSLIDE  H = HEELFLIP', {
       fontSize: '12px', fill: '#555555', fontFamily: '"Press Start 2P"'
     }).setOrigin(0.5);
   }
@@ -184,7 +184,12 @@ class GameScene extends Phaser.Scene {
       frameHeight:13
     });
 
-
+    //game sound effects
+    this.load.audio('cruising', 'cruising.wav');
+    this.load.audio('death1','death1.ogg');
+    this.load.audio('death2','death2.ogg');
+    this.load.audio('grind','grind.ogg');
+    this.load.audio('whoosh','whoosh.mp3');
 
   }
 
@@ -292,6 +297,10 @@ class GameScene extends Phaser.Scene {
   this.isManual=false;
   this.manualScore=0;
 
+  //cruising sound effect
+  this.cruisingSound=this.sound.add('cruising',{loop:true,volume:0.2});
+  this.cruisingSound.play();
+
     //Dust when landing
     const px=this.make.graphics({x:0, y:0, add:false});
     px.fillStyle(0xffffff);
@@ -343,7 +352,6 @@ class GameScene extends Phaser.Scene {
     this.cursors= this.input.keyboard.createCursorKeys();
     this.kickflipKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.K);
     this.heelflipKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.H);
-    this.shoveitKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S);
     this.manualKey=this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.M)
 
     this.isFlipping  = false;
@@ -532,7 +540,7 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
       this.grindCooldown=500;
       this.grindScore=0;
       this.comboText.setText('');
-      
+      if (this.grindSound) this.grindSound.stop();
 
     }
 
@@ -544,31 +552,27 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
       this.grindCooldown=500;
       this.grindScore=0;
       this.comboText.setText('');
-     
+     if (this.grindSound) this.grindSound.stop();
     }
   }
     //trick inputs
     if (!this.onGround && !this.isFlipping) {
       const kickHeld= this.kickflipKey.isDown;
       const heelHeld= this.heelflipKey.isDown;
-      const shoveitHeld= this.shoveitKey.isDown;
 
       if (kickHeld){
         this.isFlipping=true;
+        this.sound.play('whoosh',{volume:0.5 });
         this.flipAngle=0;
         this.currentTrick='kickflip';
         this.landedClean=false;
       } else if (heelHeld) {
         this.isFlipping=true;
+        this.sound.play('whoosh',{volume:0.5 });
         this.flipAngle=0;
         this.currentTrick='heelflip';
         this.landedClean=false;
-      } else if (shoveitHeld) {
-      this.isFlipping=true;
-      this.flipAngle=0;
-      this.currentTrick='shoveit';
-      this.landedClean=false;
-    }
+      }
   }
     //flip rotations
     if (this.isFlipping) {
@@ -584,8 +588,8 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
         this.player.resetBoardAngle();
         this.landedClean=true;
 
-        const trickNames= {kickflip: 'KICKFLIP', heelflip: 'HEELFLIP', shoveit: 'POP SHUV'};
-        const trickPoints= {kickflip: 10, heelflip:10, shoveit:8};
+        const trickNames= {kickflip: 'KICKFLIP', heelflip: 'HEELFLIP'};
+        const trickPoints= {kickflip: 10, heelflip:10};
 
         this.combo+=1;
         this.comboTimer=this.comboTimerMax;
@@ -717,6 +721,8 @@ showTrickText(text, points) {
 //HIT OBSTACLE (change in the future)
 function hitObstacle() {
   this.alive = false;
+  this.cruisingSound.stop();
+  const deathSound=Phaser.Math.Between(1,2);
   this.recoveryCount=0;
   this.skater.body.setVelocityX(0);
 
@@ -745,6 +751,9 @@ function hitObstacle() {
 function startGrind(skater,rail) {
   if (this.isGrinding) return;
   if (this.grindCooldown>0) return;
+  if (this.grindSound) this.grindSound.stop();
+  this.grindSound=this.sound.add('grind',{loop:true, volume:0.3});
+  this.grindSound.play();
   this.isGrinding=true;
   this.currentRail=rail;
   skater.body.velocityY=0;
