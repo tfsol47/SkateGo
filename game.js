@@ -810,6 +810,8 @@ function hitObstacle() {
 function startGrind(skater,rail) {
   if (this.isGrinding) return;
   if (this.grindCooldown>0) return;
+  if (skater.body.velocity.y<=0) return;
+  if (skater.y>rail.y) return;
   skater.y=rail.y- (rail.height*rail.scaleY/2)-30;
   if (this.grindSound) this.grindSound.stop();
   this.grindSound=this.sound.add('grind',{loop:true, volume:0.3});
