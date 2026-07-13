@@ -716,6 +716,7 @@ function hitObstacle() {
   this.alive = false;
   this.cruisingSound.stop();
   const deathSound=Phaser.Math.Between(1,2);
+  this.sound.play('death' +deathSound, {volume:0.3});
   this.recoveryCount=0;
   this.skater.body.setVelocityX(0);
 
