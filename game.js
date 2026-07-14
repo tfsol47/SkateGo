@@ -10,10 +10,10 @@ class Player {
     this.body=scene.add.rectangle(x, y,40,60,0x000000, 0);
     scene.physics.add.existing(this.body);
 
-//REMEMEBER TO SWAP FOR ACTUAL SPRITES
     this.container=scene.add.container(x, y).setDepth(9);
 
-    this.skaterSprite=scene.add.sprite(0,-16, 'skater_cruise').setScale(3);
+    this.skaterSprite=scene.add.sprite(0,-35, 'skater_cruise').setScale(2);
+    this.pushSprite=scene.add.sprite(0, -24, 'push').setScale(2).setVisible(false);
 
     this.boardSprite =scene.add.sprite(0,0,'board_cruise').setScale(2.5);
 
@@ -23,8 +23,9 @@ class Player {
 
 
     this.container.add([
+      this.boardContainer,
       this.skaterSprite,
-      this.boardContainer
+      this.pushSprite,
     ]);
     
 
@@ -56,12 +57,21 @@ class Player {
         } else{
           this.boardContainer.angle=0;
           this.boardContainer.scaleX=1;
-          if (!this.skaterSprite.anims.isPlaying) {
-            const nextAnim=this.lastAnim==='push' ? 'skater_cruise' : 'push';
-            this.lastAnim=nextAnim;
-            this.skaterSprite.play(nextAnim);
-          }
           this.boardSprite.play('cruise',true);
+
+          if (!this.skaterSprite.anims.isPlaying && !this.pushSprite.anims.isPlaying) {
+            if (this.lastAnim ==='push') {
+              this.pushSprite.setVisible(false);
+              this.skaterSprite.setVisible(true);
+              this.skaterSprite.play('skater_cruise');
+              this.lastAnim='skater_cruise';
+            } else{
+              this.skaterSprite.setVisible(false);
+              this.pushSprite.setVisible(true);
+              this.pushSprite.play('push');
+              this.lastAnim='push'
+            }
+          }
        } 
        
        if (isGrinding) {
@@ -225,7 +235,7 @@ class GameScene extends Phaser.Scene {
 
     //skatersprite
     this.load.spritesheet('push','push.png', {
-      frameWidth:24, frameHeight:30
+      frameWidth:48, frameHeight:61
     });
     this.load.spritesheet('skater_cruise','cruise.png',{
       frameWidth:30, frameHeight:56
