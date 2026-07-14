@@ -24,12 +24,15 @@ class Player {
     this.ollieSprite=scene.add.sprite(0,-37, 'ollie').setScale(2).setVisible(false);
     this.olliePlayed=false;
 
+    this.manualGrindSprite =scene.add.sprite(0,-37, 'manual_grind').setScale(2).setVisible(false);
+
 
     this.container.add([
       this.boardContainer,
       this.skaterSprite,
       this.pushSprite,
-      this.ollieSprite
+      this.ollieSprite,
+      this.manualGrindSprite,
     ]);
     
 
@@ -47,7 +50,7 @@ class Player {
   update(cursors, isFlipping, flipAngle, velocityY, trickType, isManual, isGrinding,onGround) {
       this.container.x=Math.round(this.body.x);
       this.container.y=Math.round(this.body.y);
-
+      //board animations
       if (isFlipping) {
         if (trickType==='heelflip'){
         this.boardSprite.play('heelflip',true);
@@ -62,17 +65,27 @@ class Player {
           this.boardContainer.angle=0;
           this.boardContainer.scaleX=1;
           this.boardSprite.play('cruise',true);
-
+        }
+          //skater animations
           if(!onGround) {
             this.skaterSprite.setVisible(false);
             this.pushSprite.setVisible(false);
+            this.manualGrindSprite.setVisible(false);
             this.ollieSprite.setVisible(true);
             if (!this.olliePlayed) {
               this.ollieSprite.play('ollie');
-              this.olliePlayed=true;            }
+              this.olliePlayed=true;
+            }
+          } else if (isGrinding || isManual) {
+            console.log('manual/grind anim triggered, isGrinding:', isGrinding, 'isManual', isManual);
+            this.skaterSprite.setVisible(false);
+            this.pushSprite.setVisible(false);
+            this.manualGrindSprite.setVisible(true);
+            this.manualGrindSprite.play('manual_grind',true);
           } else {
             this.olliePlayed=false;
             this.ollieSprite.setVisible(false);
+            this.manualGrindSprite.setVisible(false);
           if (!this.skaterSprite.anims.isPlaying && !this.pushSprite.anims.isPlaying) {
             if (this.lastAnim ==='push') {
               this.pushSprite.setVisible(false);
@@ -94,40 +107,24 @@ class Player {
           }
        } 
 
-       if (isFlipping) {
-        if(trickType==='heelflip') {
-          this.boardSprite.play('heelflip', true);
-        } else {
-          this.boardSprite.play('kickflip',true);
-        }
-       } else if (isManual) {
-        if (this.boardSprite.anims.currentAnim?.key !== 'manual_start') {
-          this.boardSprite.play('manual_start',true);
-        }
-       } else{
-        this.boardContainer.angle=0;
-        this.boardContainer.scaleX=1;
-        this.boardSprite.play('cruise',true);
-       }
-      }
-
+       //container angle
        if (isGrinding) {
         this.container.angle=0;
        } else if (!onGround) {
-        this.container.angle=Phaser.Math.Clamp(velocityY * 0.04, -20, 20);
-      } else if (isManual) {
-        this.container.angle=15;
-      } else if (cursors.down.isDown) {
-        this.container.angle =12; //Powersliding tilt
-      } else{
-        this.container.angle=-4;//cruising tilt
+        this.container.angle=Phaser.Math.Clamp(velocityY *0.04,-20,20);
+       } else if (isManual) {
+        this.container.angle=0;
+       } else if (cursors.down.isDown) {
+        this.container.angle=-12;
+       } else {
+        this.container.angle=-4
+       }
       }
-    }
-  
-    
-    resetBoardAngle() {
-      this.boardContainer.angle =0;
-    }
+
+      resetBoardAngle() {
+        this.boardContainer.angle=0;
+        this.boardContainer.scaleX=1;
+      }
   }
   
 
@@ -279,6 +276,9 @@ class GameScene extends Phaser.Scene {
     this.load.spritesheet('ollie','ollie.png', {
       frameWidth:47, frameHeight:61
     });
+    this.load.spritesheet('manual_grind', 'manual_grind.png', {
+      frameWidth:42, frameHeight: 57
+    });
 
 
   }
@@ -390,7 +390,7 @@ class GameScene extends Phaser.Scene {
   //skater animations
   if(!this.anims.exists('push')) {
     this.anims.create({
-      key:'push', frames:this.anims.generateFrameNumbers('push', {start:0,end:6}), frameRate:12, repeat:0
+      key:'push', frames:this.anims.generateFrameNumbers('push', {start:0,end:8}), frameRate:16, repeat:0
     });
   }
 
@@ -403,6 +403,12 @@ class GameScene extends Phaser.Scene {
   if(!this.anims.exists ('ollie')) {
     this.anims.create({
       key:'ollie', frames:this.anims.generateFrameNumbers('ollie', {start:0,end:8}), frameRate:18, repeat:0
+    });
+  }
+
+  if(!this.anims.exists ('manual_grind')) {
+    this.anims.create({
+      key:'manual_grind', frames:this.anims.generateFrameNumbers('manual_grind', {start:0,end:6}), frameRate:12, repeat:0
     });
   }
 
@@ -642,7 +648,7 @@ if (
       this.isGrinding=false;
       this.currentRail=null;
       this.skater.body.setAllowGravity(true);
-      this.skater.body.setVelocityY(-400);
+      this.skater.body.setVelocityY(-600);
       this.showTrickText('50-50 GRIND', Math.floor(this.grindScore));
       this.grindCooldown=500;
       this.grindScore=0;
@@ -892,6 +898,7 @@ function hitObstacle() {
 }
 
 function startGrind(skater,rail) {
+  console.log('startGrind called, isGrinding', this.isGrinding, 'cooldown:', this.grindCooldown);
   if (this.isGrinding) return;
   if (this.grindCooldown>0) return;
   if (skater.body.velocity.y<=0) return;
