@@ -67,7 +67,13 @@ class Player {
           this.boardSprite.play('cruise',true);
         }
           //skater animations
-          if(!onGround) {
+          if (isGrinding) {
+            this.skaterSprite.setVisible(false);
+            this.pushSprite.setVisible(false);
+            this.ollieSprite.setVisible(false);
+            this.manualGrindSprite.setVisible(true);
+            this.manualGrindSprite.play('manual_grind',true);
+          } else if(!onGround) {
             this.skaterSprite.setVisible(false);
             this.pushSprite.setVisible(false);
             this.manualGrindSprite.setVisible(false);
@@ -76,10 +82,10 @@ class Player {
               this.ollieSprite.play('ollie');
               this.olliePlayed=true;
             }
-          } else if (isGrinding || isManual) {
-            console.log('manual/grind anim triggered, isGrinding:', isGrinding, 'isManual', isManual);
+          } else if (isManual) {
             this.skaterSprite.setVisible(false);
             this.pushSprite.setVisible(false);
+            this.ollieSprite.setVisible(false);
             this.manualGrindSprite.setVisible(true);
             this.manualGrindSprite.play('manual_grind',true);
           } else {
@@ -117,7 +123,7 @@ class Player {
        } else if (cursors.down.isDown) {
         this.container.angle=-12;
        } else {
-        this.container.angle=-4
+        this.container.angle=0
        }
       }
 
@@ -458,7 +464,7 @@ class GameScene extends Phaser.Scene {
     this.rails=this.physics.add.staticGroup();
     this.nextRailX=1200;
     this.isGrinding=false;
-    this.grindCooldown=0;
+    this.grindCooldown=200;
     this.grindScore=0;
     this.physics.add.overlap(this.skater,this.rails,startGrind,null, this);
 
@@ -650,10 +656,11 @@ if (
       this.skater.body.setAllowGravity(true);
       this.skater.body.setVelocityY(-600);
       this.showTrickText('50-50 GRIND', Math.floor(this.grindScore));
-      this.grindCooldown=500;
+      this.grindCooldown=200;
       this.grindScore=0;
       this.comboText.setText('');
       if (this.grindSound) this.grindSound.stop();
+      this.player.olliePlayed=false;
       
     }
 }
@@ -684,10 +691,11 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
       this.currentRail=null;
       this.skater.body.setAllowGravity(true);
       this.showTrickText('50-50 GRIND', Math.floor(this.grindScore));
-      this.grindCooldown=500;
+      this.grindCooldown=200;
       this.grindScore=0;
       this.comboText.setText('');
      if (this.grindSound) this.grindSound.stop();
+     this.player.olliePlayed=false;
     }
   
     //trick inputs
@@ -898,7 +906,6 @@ function hitObstacle() {
 }
 
 function startGrind(skater,rail) {
-  console.log('startGrind called, isGrinding', this.isGrinding, 'cooldown:', this.grindCooldown);
   if (this.isGrinding) return;
   if (this.grindCooldown>0) return;
   if (skater.body.velocity.y<=0) return;
