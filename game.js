@@ -21,11 +21,14 @@ class Player {
       this.boardSprite
     ]);
 
+    this.ollieSprite=scene.add.sprite(0,-37, 'ollie').setScale(2).setVisible(false);
+
 
     this.container.add([
       this.boardContainer,
       this.skaterSprite,
       this.pushSprite,
+      this.ollieSprite
     ]);
     
 
@@ -40,7 +43,7 @@ class Player {
   }
   
 
-  update(cursors, isFlipping, flipAngle, velocityY, trickType, isManual, isGrinding) {
+  update(cursors, isFlipping, flipAngle, velocityY, trickType, isManual, isGrinding,) {
       this.container.x=Math.round(this.body.x);
       this.container.y=Math.round(this.body.y);
 
@@ -59,6 +62,15 @@ class Player {
           this.boardContainer.scaleX=1;
           this.boardSprite.play('cruise',true);
 
+          if(!this.onGround) {
+            this.skaterSprite.setVisible(false);
+            this.pushSprite.setVisible(false);
+            if (!this.ollieSprite.anims.isPlaying) {
+              this.ollieSprite.setVisible(true);
+              this.ollieSprite.play('ollie');
+            }
+          } else{
+            this.ollieSprite.setVisible(false);
           if (!this.skaterSprite.anims.isPlaying && !this.pushSprite.anims.isPlaying) {
             if (this.lastAnim ==='push') {
               this.pushSprite.setVisible(false);
@@ -73,7 +85,8 @@ class Player {
             }
           }
        } 
-       
+      }
+
        if (isGrinding) {
         this.container.angle=0;
        } else if (!this.onGround) {
@@ -241,6 +254,11 @@ class GameScene extends Phaser.Scene {
       frameWidth:30, frameHeight:56
     });
 
+    this.load.spritesheet('ollie','ollie.png', {
+      frameWidth:47, frameHeight:61
+    });
+
+
   }
 
   create() {
@@ -357,6 +375,12 @@ class GameScene extends Phaser.Scene {
   if(!this.anims.exists('skater_cruise')) {
     this.anims.create({
       key:'skater_cruise', frames:this.anims.generateFrameNumbers('skater_cruise', {start:0,end:2}), frameRate:8, repeat:0
+    });
+  }
+
+  if(!this.anims.exists ('ollie')) {
+    this.anims.create({
+      key:'ollie', frames:this.anims.generateFrameNumbers('ollie', {start:0,end:8}), frameRate:18, repeat:0
     });
   }
 
@@ -662,7 +686,7 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
       const displayAngle=this.currentTrick==='heelflip' ?-this.flipAngle : this.flipAngle;
       const targetAngle= 360;
 
-      this.player.update(this.cursors, true, displayAngle, body.velocity.y, this.currentTrick,false, this.isGrinding);
+      this.player.update(this.cursors, true, displayAngle, body.velocity.y, this.currentTrick,false, this.isGrinding,this.onGround,);
 
       if (this.flipAngle >= targetAngle) {
         this.isFlipping = false;
@@ -684,7 +708,7 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
         this.comboText.setText('COMBO x' + this.combo);
       }
     } else {
-      this.player.update(this.cursors, false, 0, body.velocity.y, null,this.isManual,this.isGrinding);
+      this.player.update(this.cursors, false, 0, body.velocity.y, null,this.isManual,this.isGrinding,this.onGround,);
     }
 
     // spawn obstacles
