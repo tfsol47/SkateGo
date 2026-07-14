@@ -43,7 +43,7 @@ class Player {
   }
   
 
-  update(cursors, isFlipping, flipAngle, velocityY, trickType, isManual, isGrinding,) {
+  update(cursors, isFlipping, flipAngle, velocityY, trickType, isManual, isGrinding,onGround) {
       this.container.x=Math.round(this.body.x);
       this.container.y=Math.round(this.body.y);
 
@@ -62,7 +62,7 @@ class Player {
           this.boardContainer.scaleX=1;
           this.boardSprite.play('cruise',true);
 
-          if(!this.onGround) {
+          if(!onGround) {
             this.skaterSprite.setVisible(false);
             this.pushSprite.setVisible(false);
             if (!this.ollieSprite.anims.isPlaying) {
@@ -409,7 +409,7 @@ class GameScene extends Phaser.Scene {
     this.dust = this.add.particles(0, 0, 'white_particle',{
       speed: {min: 80, max:220 },
       angle: {min:150, max:210},
-      lifespan:500,
+      lifespan:625,
       quantity: 0,
       scale: {start: 1.2, end: 0},
       alpha: {start: 0.9, end: 0}
@@ -643,12 +643,13 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
       this.skater.y=this.currentRail.y- (this.currentRail.height*this.currentRail.scaleY/2)-30;
       this.grindScore += 1;
       this.score+=0.01;
-      this.sparks.emitParticleAt(this.skater.x,this.skater.y+30,3);
+      this.sparks.emitParticleAt(this.skater.x+20,this.skater.y+30,10);
+      this.sparks.emitParticleAt(this.skater.x-20,this.skater.y+30,10);
 
     }
 
     //fell off the end of rail
-    if (this.skater.x > this.currentRail.x+100) {
+    if (this.currentRail && this.currentRail && this.skater.x > this.currentRail.x+100) {
       this.isGrinding=false;
       this.currentRail=null;
       this.skater.body.setAllowGravity(true);
