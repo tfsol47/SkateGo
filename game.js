@@ -22,6 +22,7 @@ class Player {
     ]);
 
     this.ollieSprite=scene.add.sprite(0,-37, 'ollie').setScale(2).setVisible(false);
+    this.olliePlayed=false;
 
 
     this.container.add([
@@ -65,11 +66,12 @@ class Player {
           if(!onGround) {
             this.skaterSprite.setVisible(false);
             this.pushSprite.setVisible(false);
-            if (!this.ollieSprite.anims.isPlaying) {
-              this.ollieSprite.setVisible(true);
+            this.ollieSprite.setVisible(true);
+            if (!this.olliePlayed) {
               this.ollieSprite.play('ollie');
-            }
-          } else{
+              this.olliePlayed=true;            }
+          } else {
+            this.olliePlayed=false;
             this.ollieSprite.setVisible(false);
           if (!this.skaterSprite.anims.isPlaying && !this.pushSprite.anims.isPlaying) {
             if (this.lastAnim ==='push') {
@@ -83,13 +85,35 @@ class Player {
               this.pushSprite.play('push');
               this.lastAnim='push'
             }
+          } else if (this.lastAnim === 'push') {
+            this.pushSprite.setVisible(true);
+            this.skaterSprite.setVisible(false);
+          } else {
+            this.skaterSprite.setVisible(true);
+            this.pushSprite.setVisible(false);
           }
        } 
+
+       if (isFlipping) {
+        if(trickType==='heelflip') {
+          this.boardSprite.play('heelflip', true);
+        } else {
+          this.boardSprite.play('kickflip',true);
+        }
+       } else if (isManual) {
+        if (this.boardSprite.anims.currentAnim?.key !== 'manual_start') {
+          this.boardSprite.play('manual_start',true);
+        }
+       } else{
+        this.boardContainer.angle=0;
+        this.boardContainer.scaleX=1;
+        this.boardSprite.play('cruise',true);
+       }
       }
 
        if (isGrinding) {
         this.container.angle=0;
-       } else if (!this.onGround) {
+       } else if (!onGround) {
         this.container.angle=Phaser.Math.Clamp(velocityY * 0.04, -20, 20);
       } else if (isManual) {
         this.container.angle=15;
@@ -671,12 +695,14 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
         this.flipAngle=0;
         this.currentTrick='kickflip';
         this.landedClean=false;
+        this.player.olliePlayed=false;
       } else if (heelHeld) {
         this.isFlipping=true;
         this.sound.play('whoosh',{volume:0.5 });
         this.flipAngle=0;
         this.currentTrick='heelflip';
         this.landedClean=false;
+        this.player.olliePlayed=false;
       }
   }
     //flip rotations
