@@ -757,6 +757,9 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
       this.physics.add.existing(obs, true);
       this.obstacles.add(obs);
       this.nextObstacleX += Phaser.Math.Between(500, 900);
+      if (Math.abs(this.nextObstacleX -this.nextRailX) <300) {
+        this.nextObstacleX=this.nextRailX+400;
+      }
     }
 
     if (this.skater.x+600 > this.nextRailX) {
@@ -766,6 +769,9 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
       rail.body.reset(this.nextRailX, GROUND_Y-46);
       this.rails.add(rail);
       this.nextRailX+=Phaser.Math.Between(1200,2000);
+      if (Math.abs(this.nextRailX -this.nextObstacleX) <300) {
+        this.nextObstacleX=this.nextRailX+400;
+      }
 
     }
 
