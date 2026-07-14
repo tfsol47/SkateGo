@@ -615,7 +615,7 @@ class GameScene extends Phaser.Scene {
       this.coyoteTimer -= this.game.loop.delta;
     }
 
-    const baseSpeed = Math.min(250 + Math.floor(this.score / 100) * 15, 600);
+    const baseSpeed = Math.min(250 + Math.floor(this.score / 100) * 15, 1000);
 
     
     if(Phaser.Input.Keyboard.JustDown(this.manualKey)&& this.onGround) {
@@ -755,6 +755,8 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
       const obsX = this.nextObstacleX;
       const obs = this.add.image(obsX, GROUND_Y - 38,'cone').setDepth(7).setScale(1.5);
       this.physics.add.existing(obs, true);
+      obs.body.setSize(22,40);
+      obs.body.setOffset(14,6);
       this.obstacles.add(obs);
       this.nextObstacleX += Phaser.Math.Between(500, 900);
       if (Math.abs(this.nextObstacleX -this.nextRailX) <300) {
@@ -777,7 +779,7 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
 
     this.score += 1;
     this.scoreText.setText('SCORE: ' + Math.floor(this.score / 10));
-    this.speedText.setText('SPEED: ' + (Math.floor(this.score / 100) + 1));
+    this.speedText.setText('SPEED: ' + (Math.floor(this.score / 50) + 1));
   }
 
 //RECOVERY
