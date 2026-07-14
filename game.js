@@ -90,7 +90,6 @@ class Player {
        if (isGrinding) {
         this.container.angle=0;
        } else if (!this.onGround) {
-        this.container.angle=0;
         this.container.angle=Phaser.Math.Clamp(velocityY * 0.04, -20, 20);
       } else if (isManual) {
         this.container.angle=15;
@@ -191,7 +190,6 @@ class GameScene extends Phaser.Scene {
 
   preload() {
     this.load.image('bg1','bg1.png');
-    this.load.image('bg1', 'bg1.png');
     this.load.image('bg2', 'bg2.png');
     this.load.image('bg3', 'bg3.png');
     this.load.image('bg4', 'bg4.png');
@@ -203,7 +201,7 @@ class GameScene extends Phaser.Scene {
     this.load.image('sunset4', 'sunset4.png');
     this.load.image('sunset5', 'sunset5.png');
 
-    //music catalog, credits to kaibb on itch
+    //music catalog, kaibb on itch
     this.load.audio('amoeba','music/amoeba.mp3');
     this.load.audio('armillare', 'music/armillare.mp3');
     this.load.audio('botanica', 'music/botanica.mp3');
@@ -323,7 +321,7 @@ class GameScene extends Phaser.Scene {
       gDetail.fillRect(i * 200 + 10, GROUND_Y + 4, 160, 2);
     }
 
-    //SKATER (still thinking of name)
+    //SKATER
     this.player =new Player(this, 100, SKATER_START_Y);
     this.skater=this.player.body;
 
@@ -447,7 +445,7 @@ class GameScene extends Phaser.Scene {
     this.wasOnGround = true;
     this.coyoteTime = 100;
     this.coyoteTimer = 0;
-    //Music
+    //Music 
     this.musicTracks=[
       'amoeba', 'armillare','botanica','byrbot','endless','familiar_room',
       'featherfall','forest_interior','gill','glyph','heart_garden'
@@ -635,7 +633,7 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
   body.setVelocityY(body.velocity.y *0.6);
 }
 //gravity multiplier
-//keep 1.04 for now may change later
+//keep 1.04, change if needed
   if (body.velocity.y >0 && !this.isGrinding) {
     body.setVelocityY(body.velocity.y * 1.04);
 }
@@ -650,7 +648,7 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
     }
 
     //fell off the end of rail
-    if (this.currentRail && this.currentRail && this.skater.x > this.currentRail.x+100) {
+    if (this.skater.x > this.currentRail.x+100) {
       this.isGrinding=false;
       this.currentRail=null;
       this.skater.body.setAllowGravity(true);
@@ -871,7 +869,6 @@ function startGrind(skater,rail) {
   if (this.grindCooldown>0) return;
   if (skater.body.velocity.y<=0) return;
   if (skater.y>rail.y) return;
-  skater.y=rail.y- (rail.height*rail.scaleY/2)-30;
   if (this.grindSound) this.grindSound.stop();
   this.grindSound=this.sound.add('grind',{loop:true, volume:0.3});
   this.grindSound.play();
