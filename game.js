@@ -24,7 +24,7 @@ class Player {
     this.ollieSprite=scene.add.sprite(0,-37, 'ollie').setScale(2).setVisible(false);
     this.olliePlayed=false;
 
-    this.manualGrindSprite =scene.add.sprite(0,-37, 'manual_grind').setScale(2).setVisible(false);
+    this.manualGrindSprite =scene.add.sprite(-10,-33, 'manual_grind').setScale(2).setVisible(false);
 
 
     this.container.add([
@@ -77,6 +77,7 @@ class Player {
             this.skaterSprite.setVisible(false);
             this.pushSprite.setVisible(false);
             this.manualGrindSprite.setVisible(false);
+            this.manualGrindSprite.angle=0;
             this.ollieSprite.setVisible(true);
             if (!this.olliePlayed) {
               this.ollieSprite.play('ollie');
@@ -88,6 +89,7 @@ class Player {
             this.ollieSprite.setVisible(false);
             this.manualGrindSprite.setVisible(true);
             this.manualGrindSprite.play('manual_grind',true);
+            this.manualGrindSprite.angle=-8;
           } else {
             this.olliePlayed=false;
             this.ollieSprite.setVisible(false);
@@ -539,7 +541,6 @@ class GameScene extends Phaser.Scene {
         this.isPaused=true;
         this.physics.pause();
         this.cruisingSound.pause();
-        this.cruisingSound.pause();
         if (this.currentMusic) this.currentMusic.pause();
         this.pauseText=this.add.text(W/2,H/2, 'PAUSED\n\nPRESS ESC TO RESUME', {
           fontSize: '24px', fill: '#ffffff', fontFamily: '"Press Start 2P"', align:'center'
@@ -670,7 +671,7 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
   body.setVelocityY(body.velocity.y *0.6);
 }
 //gravity multiplier
-//keep 1.04, change if needed
+//keep 1.04, more floaty
   if (body.velocity.y >0 && !this.isGrinding) {
     body.setVelocityY(body.velocity.y * 1.04);
 }
@@ -686,7 +687,7 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
     }
 
     //fell off the end of rail
-    if (this.currentRail && this.currentRail && this.skater.x > this.currentRail.x+100) {
+    if (this.currentRail && this.skater.x > this.currentRail.x+100) {
       this.isGrinding=false;
       this.currentRail=null;
       this.skater.body.setAllowGravity(true);
