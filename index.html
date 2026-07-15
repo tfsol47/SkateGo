@@ -4,6 +4,12 @@
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
   <title>SkateGO</title>
   <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const supabaseUrl='https://waerqyntkzgqsfmygnpg.supabase.co';
+    const supabaseKey='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndhZXJxeW50a3pncXNmbXlnbnBnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQxMzIzMjQsImV4cCI6MjA5OTcwODMyNH0.M5LCb0YFSODHPVR3IHqaX9zRpQKDR1yYzeFhQHYlC28'
+    const db=supabase.createClient(supabaseUrl,supabaseKey);
+  </script>
   <style>
     * { margin: 0; padding: 0; }
     canvas { display: block; }

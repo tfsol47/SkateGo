@@ -27,6 +27,7 @@ class Player {
     this.manualGrindSprite =scene.add.sprite(-10,-33, 'manual_grind').setScale(2).setVisible(false);
 
 
+
     this.container.add([
       this.boardContainer,
       this.skaterSprite,
@@ -133,6 +134,7 @@ class Player {
         this.boardContainer.angle=0;
         this.boardContainer.scaleX=1;
       }
+
   }
   
 
@@ -150,47 +152,58 @@ class MenuScene extends Phaser.Scene {
     this.add.image(W/2,H/2,'bg4').setDisplaySize(W,H).setDepth(0);
     this.add.image(W/2,H/2,'bg5').setDisplaySize(W,H).setDepth(0);
 
-    //bg for text
-    this.add.rectangle(0,0,W,H, 0x000000,0.25).setOrigin(0,0).setDepth(5);
+    //right panel menu
+    const panelW= W*0.38;
+    const panelX= W-panelW;
+    this.add.rectangle(panelX,0, panelW, H, 0x000000,0.75).setOrigin(0,0).setDepth(5);
 
-    this.add.text(W / 2, H * 0.2, 'SKATE GO', {
-      fontSize: '48px', fill: '#ffffff', fontFamily: '"Press Start 2P"'
-    }).setOrigin(0.5);
+    const cx=panelX+panelW/2;
 
-    this.add.text(W / 2, H * 0.35, 'CHOOSE YOUR CITY', {
-      fontSize: '20px', fill: '#ababab', fontFamily: '"Press Start 2P"'
-    }).setOrigin(0.5);
+
+    this.add.text(cx, H * 0.1, 'SKATE GO', {
+      fontSize: '32px', fill: '#ffffff', fontFamily: '"Press Start 2P"'
+    }).setOrigin(0.5).setDepth(6);
+
+    this.add.text(cx, H * 0.2, 'CHOOSE YOUR CITY', {
+      fontSize: '13px', fill: '#ababab', fontFamily: '"Press Start 2P"'
+    }).setOrigin(0.5).setDepth(6);
 
     //Night city
-    const nightBtn = this.add.rectangle(W / 2 - 200, H * 0.55, 320, 80, 0x1a1a2e).setInteractive();
-    this.add.text(W / 2 - 200, H * 0.55, 'NIGHT CITY', {
-      fontSize: '18px', fill: '#00ffff', fontFamily: '"Press Start 2P"'
-    }).setOrigin(0.5);
+    const nightBtn = this.add.rectangle(cx, H*0.3, panelW * 0.75, 50, 0x1a1a2e).setInteractive().setDepth(6);
+    this.add.text(cx, H* 0.3, 'NIGHT CITY', {
+      fontSize: '14px', fill: '#00ffff', fontFamily: '"Press Start 2P"'
+    }).setOrigin(0.5).setDepth(7);
 
     //sunset suburb
-    const sunsetBtn = this.add.rectangle(W / 2 + 200, H * 0.55, 320, 80, 0x2d1b00).setInteractive();
-    this.add.text(W / 2 + 200, H * 0.55, 'SUNSET\nSUBURB', {
-      fontSize: '18px', fill: '#f86300', fontFamily: '"Press Start 2P"', align: 'center'
-    }).setOrigin(0.5);
+    const sunsetBtn = this.add.rectangle(cx, H* 0.42, panelW * 0.75, 50, 0x2d1b00).setInteractive().setDepth(6);
+    this.add.text(cx, H* 0.42, 'SUNSET SUBURB', {
+      fontSize: '14px', fill: '#f86300', fontFamily: '"Press Start 2P"'
+    }).setOrigin(0.5).setDepth(7);
 
-    nightBtn.on('pointerover',  () => nightBtn.setFillStyle(0x2a2a4e));
-    nightBtn.on('pointerout',   () => nightBtn.setFillStyle(0x1a1a2e));
-    sunsetBtn.on('pointerover', () => sunsetBtn.setFillStyle(0x4d3b00));
-    sunsetBtn.on('pointerout',  () => sunsetBtn.setFillStyle(0x2d1b00));
+    nightBtn.on('pointerover',()=> nightBtn.setFillStyle(0x2a2a4e));
+    nightBtn.on('pointerout',()=> nightBtn.setFillStyle(0x1a1a2e));
+    sunsetBtn.on('pointerover',()=> sunsetBtn.setFillStyle(0x4d3b00));
+    sunsetBtn.on('pointerout',()=> sunsetBtn.setFillStyle(0x2d1b00));
 
-    nightBtn.on('pointerdown',  () =>{
+    nightBtn.on('pointerdown',() =>{
       this.cameras.main.fade(800,0,0,0);
       this.time.delayedCall(800,() => this.scene.start('GameScene', { theme: 'night' }));
     });
     sunsetBtn.on('pointerdown', () =>{
       this.cameras.main.fade(1200,0,0,0);
-      this.time.delayedCall(1200, ()=> this.scene.start('GameScene', { theme: 'sunset' }));
+      this.time.delayedCall(1200,()=> this.scene.start('GameScene', { theme: 'sunset' }));
     });
 
-    this.add.text(W / 2, H * 0.8, 'SPACE / ARROW UP = JUMP  M = MANUAL   K = KICKFLIP\n    ARROW DOWN = POWERSLIDE  H = HEELFLIP', {
-      fontSize: '12px', fill: '#939393', fontFamily: '"Press Start 2P"'
-    }).setOrigin(0.5);
+    //leaderboard
+    this.add.text(cx, H*0.55, 'TOP 10', {
+      fontSize:'13px', fill: '#ffff2a', fontFamily:'"Press Start 2P"'
+    }).setOrigin(0.5).setDepth(6);
 
+    this.lbText=this.add.text(cx, H*0.62, 'loading..', {
+      fontSize:'10px', fill: '#cccccc', fontFamily: '"Press Start 2P"', align: 'left', lineSpacing: 8
+    }).setOrigin(0.5, 0).setDepth(6);
+
+    this.fetchLeaderboard();
     this.cameras.main.fadeIn(1200,0,0,0);
   }
 
@@ -202,8 +215,23 @@ preload() {
   this.load.image('bg5','bg5.png');
 }
 
+async fetchLeaderboard() {
+  const {data,error}=await db
+  .from('scores').select('name,score').order('score',{ascending: false}).limit(10);
 
+  if(error || !data) {
+    this.lbText.setText('failed to load');
+    return;
+  }
 
+  if(data.length===0) {
+    this.lbText.setText('no scores yet');
+    return;
+  }
+
+  const lines=data.map((row,i) => `${i+1}. ${row.name.substring(0,10).panEnd(10)} ${row.score}`);
+this.lbText.setText(lines.join('\n'));
+}
 
 }
 
@@ -287,6 +315,7 @@ class GameScene extends Phaser.Scene {
     this.load.spritesheet('manual_grind', 'manual_grind.png', {
       frameWidth:42, frameHeight: 57
     });
+
 
 
   }
@@ -419,6 +448,7 @@ class GameScene extends Phaser.Scene {
       key:'manual_grind', frames:this.anims.generateFrameNumbers('manual_grind', {start:0,end:6}), frameRate:12, repeat:0
     });
   }
+
 
   //cruising sound effect
   this.cruisingSound=this.sound.add('cruising',{loop:true,volume:0.2});
@@ -752,7 +782,7 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
     }
 
     // spawn obstacles
-    if (this.skater.x + 500 > this.nextObstacleX) {
+    if (this.skater.x + 1000 > this.nextObstacleX) {
       const obsX = this.nextObstacleX;
       const obs = this.add.image(obsX, GROUND_Y - 38,'cone').setDepth(7).setScale(1.5);
       this.physics.add.existing(obs, true);
@@ -765,7 +795,7 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
       }
     }
 
-    if (this.skater.x+600 > this.nextRailX) {
+    if (this.skater.x+1200 > this.nextRailX) {
       const rail=this.add.image(this.nextRailX, GROUND_Y-46, 'bench').setDepth(7).setScale(2);
       this.physics.add.existing(rail,true);
       rail.body.setSize(64*2,46*2);
