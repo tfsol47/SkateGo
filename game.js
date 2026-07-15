@@ -506,7 +506,12 @@ class GameScene extends Phaser.Scene {
     this.kickflipKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.K);
     this.heelflipKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.H);
     this.manualKey=this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.M)
+    
 
+    this.recoveryActive=false;
+    this.recoveryCount=0;
+    this.recoveryPresses=0;
+    this.recoveryPressesNeeded=5;
     this.isFlipping  = false;
     this.flipAngle   = 0;
     this.onGround    = false;
@@ -569,6 +574,10 @@ class GameScene extends Phaser.Scene {
       this.controlsBtn.setStyle({fill:this.showControls ? '#0bffff' : '#ffffff'});
     });
 
+    this.events.on('shutdown', ()=>{
+    this.input.keyboard.off('keydown-SPACE', this.boundRecovery);
+  });
+
     //Camera
     this.cameras.main.startFollow(this.skater, true, 0.1, 0.1);
     this.cameras.main.setFollowOffset(-W * 0.18, 0);
@@ -576,6 +585,9 @@ class GameScene extends Phaser.Scene {
 
   update(time, delta) {
     if (!this.alive) return;
+    if (this.recoveryActive && Phaser.Input.Keyboard.JustDown(this.cursors.space)) {
+      this.handleRecoveryInput();
+    }
     if (Phaser.Input.Keyboard.JustDown(this.pauseKey)) {
       if(this.isPaused) {
         this.isPaused=false;
@@ -613,7 +625,7 @@ class GameScene extends Phaser.Scene {
         this.recoveryText.destroy();
         this.recoveryBar.destroy();
         this.recoveryFill.destroy();
-        this.input.keyboard.off('keydown-SPACE', this.handleRecoveryInput, this);
+        this.input.keyboard.off('keydown-SPACE', this.boundRecovery,);
         hitObstacle.call(this);
       }
     }
@@ -848,7 +860,6 @@ startRecovery() {
     fontFamily: '"Press Start 2P"'
   }).setDepth(30).setScrollFactor(0).setOrigin(0.5);
 
-  this.input.keyboard.on('keydown-SPACE', this.handleRecoveryInput, this);
 }
 
 
@@ -865,7 +876,6 @@ handleRecoveryInput() {
     this.recoveryText.destroy();
     this.recoveryBar.destroy();
     this.recoveryFill.destroy();
-    this.input.keyboard.off('keydown-SPACE', this.handleRecoveryInput, this);
     this.skateSpeed=250;
 
     const recovered= this.add.text(W/2, H*0.5, 'RECOVERED', {
