@@ -961,6 +961,13 @@ function hitObstacle() {
   async function submitScore() {
     const name=input.value.trim().toUpperCase().substring(0,10);
     if (!name) return;
+    if (finalScore <50) {
+      wrap.style.display='none';
+      scene.add.text(W/2, H*0.65, 'score too low to submit, sorry', {
+        fontSize:'12px',fill:'#aaaaaa',fontFamily:'"Press Start 2P"'
+      }).setOrigin(0.5).setScrollFactor(0).setDepth(30);
+      return;
+    }
 
     wrap.style.display='none';
 
