@@ -229,7 +229,7 @@ async fetchLeaderboard() {
     return;
   }
 
-  const lines=data.map((row,i) => `${i+1}. ${row.name.substring(0,10).panEnd(10)} ${row.score}`);
+  const lines=data.map((row,i) => `${i+1}. ${row.name.substring(0,10).padEnd(10)} ${row.score}`);
 this.lbText.setText(lines.join('\n'));
 }
 
@@ -910,38 +910,84 @@ function hitObstacle() {
   if (!this.alive) return;
   this.alive = false;
   this.cruisingSound.stop();
+  if (this.currentMusic) this.currentMusic.pause();
   const deathSound=Phaser.Math.Between(1,2);
   this.sound.play('death' +deathSound, {volume:0.075});
   this.recoveryCount=0;
   this.skater.body.setVelocityX(0);
+  this.skater.body.setVelocityY(0);
+  this.physics.pause();
 
-  this.add.text(W / 2, H * 0.35, 'FAILED!', {
+  const finalScore =Math.floor(this.score/10);
+  if (finalScore> this.highScore) this.highScore=finalScore;
+
+  //dark overlay
+  this.add.rectangle(0,0,W,H, 0x000000, 0.85).setOrigin(0,0).setScrollFactor(0).setDepth(28);
+
+  //score text
+  this.add.text(W / 2, H * 0.2, 'FAILED!', {
     fontSize: '48px', fill: '#ff0000', fontFamily: '"Press Start 2P"'
   }).setOrigin(0.5).setScrollFactor(0).setDepth(30);
-  const finalScore =Math.floor(this.score/10);
-  if(Math.floor(this.score/10) > this.highScore) {
-    this.highScore=Math.floor(this.score/10);
-  }
-  this.add.text(W / 2, H * 0.5, 'SCORE: ' + Math.floor(this.score / 10), {
+  
+  this.add.text(W / 2, H * 0.32, 'SCORE: ' +finalScore, {
     fontSize: '24px', fill: '#ffffff', fontFamily: '"Press Start 2P"'
   }).setOrigin(0.5).setScrollFactor(0).setDepth(30);
 
-  this.add.text(W/2, H*0.58, 'BEST: ' + this.highScore, {
+  this.add.text(W/2, H*0.4, 'BEST: ' + this.highScore, {
     fontSize: '18px', fill: '#ffff00', fontFamily: '"Press Start 2P"'
   }).setOrigin(0.5).setScrollFactor(0).setDepth(30);
 
-  this.add.text(W / 2, H * 0.62, 'returning to menu...', {
-    fontSize: '14px', fill: '#aaaaaa', fontFamily: '"Press Start 2P"'
+  this.add.text(W / 2, H * 0.52, 'ENTER YOUR NAME', {
+    fontSize: '13px', fill: '#aaaaaa', fontFamily: '"Press Start 2P"'
   }).setOrigin(0.5).setScrollFactor(0).setDepth(30);
 
-  this.add.text(W/2, H*0.72, 'PRESS ANY KEY TO CONTINUE', {
-    fontSize:'12px', fill:'#ffffff', fontFamily:'"Press Start 2P"'
+  const input=document.getElementById('player-name');
+  const btn=document.getElementById('submit-score');
+  const wrap=document.getElementById('name-input');
+
+  input.style.left=(W/2-120) +'px'
+  input.style.top=(H*0.57) +'px'
+  input.style.wdith='180px';
+
+  btn.style.left=(W/2 +70) +'px';
+  btn.style.top= (H*0.57) +'px';
+
+  wrap.style.display='block';
+  input.value='';
+  input.focus();
+
+  const scene=this;
+
+  async function submitScore() {
+    const name=input.value.trim().toUpperCase().substring(0,10);
+    if (!name) return;
+
+    wrap.style.display='none';
+
+    const {error} =await db.from('scores').insert({name, score:finalScore});
+
+    if (error) {
+      scene.add.text(W/2, H*0.65, 'failed to submit :(', {
+        fontSize:'12px', fill:'#ff0000', fontFamily: '"Press Start 2P"'
+      }).setOrigin(0.5).setScrollFactor(0).setDepth(30);
+    } else {
+      scene.add.text(W/2, H*0.65, 'score submitted :)', {
+        fontSize:'12px', fill: '#00ff00', fontFamily: '"Press Start 2P"'
+      }).setOrigin(0.5).setScrollFactor(0).setDepth(30);
+    }
+
+    scene.add.text(W/2, H*0.75, 'PRESS ANY KEY TO CONTINUE', {
+    fontSize:'13px', fill:'#ffffff', fontFamily:'"Press Start 2P"'
   }).setOrigin(0.5).setScrollFactor(0).setDepth(30);
-  
-  this.input.keyboard.once('keydown', ()=> {
-    this.cameras.main.fade(1200,0,0,0);
-    this.time.delayedCall(1200, ()=> this.scene.start('MenuScene'));
+
+  scene.input.keyboard.once('keydown', ()=> {
+    scene.cameras.main.fade(1200,0,0,0);
+    scene.time.delayedCall(1200, ()=> scene.scene.start('MenuScene'));
   });
+}
+
+btn.onclick=submitScore;
+input.onkeydown=(e)=> {if (e.key==='Enter') submitScore();};
 }
 
 function startGrind(skater,rail) {
