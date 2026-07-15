@@ -937,7 +937,7 @@ function hitObstacle() {
     fontSize: '18px', fill: '#ffff00', fontFamily: '"Press Start 2P"'
   }).setOrigin(0.5).setScrollFactor(0).setDepth(30);
 
-  this.add.text(W / 2, H * 0.52, 'ENTER YOUR NAME', {
+  this.add.text(W / 2, H * 0.52, 'ENTER YOUR NAME or skip :(', {
     fontSize: '13px', fill: '#aaaaaa', fontFamily: '"Press Start 2P"'
   }).setOrigin(0.5).setScrollFactor(0).setDepth(30);
 
@@ -995,6 +995,22 @@ function hitObstacle() {
 
 btn.onclick=submitScore;
 input.onkeydown=(e)=> {if (e.key==='Enter') submitScore();};
+
+const skipBtn= document.getElementById('skip-score');
+skipBtn.style.left=(W/2-40) +'px';
+skipBtn.style.top=(H*0.64) +'px';
+skipBtn.style.display='block';
+skipBtn.onclick=()=> {
+  wrap.style.display='none';
+  skipBtn.style.display='none';
+  scene.add.text(W/2, H*0.75, 'PRESS ANY KEY', {
+    fontSize:'13px', fill:'#ffffff', fontFamily:'"Press Start 2P"'
+  }).setOrigin(0.5).setScrollFactor(0).setDepth(30);
+  scene.input.keyboard.once('keydown', ()=> {
+    scene.cameras.main.fade(1200,0,0,0);
+    scene.time.delayedCall(1200, ()=> scene.scene.start('MenuScene'));
+  });
+};
 }
 
 function startGrind(skater,rail) {
