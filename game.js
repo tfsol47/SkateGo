@@ -553,6 +553,22 @@ class GameScene extends Phaser.Scene {
     this.pauseKey= this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
     this.isPaused=false;
 
+    this.showControls=false;
+    this.controlsBtn=this.add.text(W-16,16, '?', {
+      fontSize:'27px', fill:'#ffffff', fontFamily:'"Press Start 2P"'
+    }).setScrollFactor(0).setDepth(20).setOrigin(1,0).setInteractive();
+
+    this.controlsPanel=this.add.text(W-16,40, 'SPACE/ARROW UP = jump\n(hold for higher jump)\nDOWN = slow down\nK = kickflip\nH = Heelflip\nM = manual\nESC = pause', {
+      fontSize:'9px', fill:'#c0bfbf', fontFamily:'"Press Start 2P"', align:'right', lineSpacing:6,
+      backgroundColor: '#000000', padding:{x:8, y:6}
+    }).setScrollFactor(0).setDepth(20).setOrigin(1,0).setVisible(false);
+
+    this.controlsBtn.on('pointerdown', () =>{
+      this.showControls=!this.showControls;
+      this.controlsPanel.setVisible(this.showControls);
+      this.controlsBtn.setStyle({fill:this.showControls ? '#0bffff' : '#ffffff'});
+    });
+
     //Camera
     this.cameras.main.startFollow(this.skater, true, 0.1, 0.1);
     this.cameras.main.setFollowOffset(-W * 0.18, 0);
