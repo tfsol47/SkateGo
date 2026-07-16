@@ -659,8 +659,8 @@ class GameScene extends Phaser.Scene {
       }
     }
 
-    const body = this.skater;
-    this.onGround = body.blocked.down;
+    const body = this.skater.body;
+    this.onGround = this.skater.body.blocked.down;
 
     //landings
     if (!this.wasOnGround && this.onGround) {
@@ -708,7 +708,7 @@ class GameScene extends Phaser.Scene {
     if (this.mobileJump) {
       this.mobileJump=false;
       if (this.onGround || this.coyoteTimer>0 || this.isGrinding) {
-        this.skater.setVelocityY(-750);
+        this.skater.body.setVelocityY(-750);
         this.coyoteTimer=0;
         this.mobileJumping=true;
         this.time.delayedCall(400, ()=>this.mobileJumping=false);
@@ -776,8 +776,8 @@ if (
     if (this.isGrinding) {
       this.isGrinding=false;
       this.currentRail=null;
-      this.skater.setAllowGravity(true);
-      this.skater.setVelocityY(-600);
+      this.skater.body.setAllowGravity(true);
+      this.skater.body.setVelocityY(-600);
       this.showTrickText('50-50 GRIND', Math.floor(this.grindScore));
       this.grindCooldown=200;
       this.grindScore=0;
@@ -812,7 +812,7 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
     if (this.currentRail && this.skater.x > this.currentRail.x+100) {
       this.isGrinding=false;
       this.currentRail=null;
-      this.skater.setAllowGravity(true);
+      this.skater.body.setAllowGravity(true);
       this.showTrickText('50-50 GRIND', Math.floor(this.grindScore));
       this.grindCooldown=200;
       this.grindScore=0;
@@ -914,7 +914,7 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
 
 //RECOVERY
 startRecovery() {
-  this.skater.setVelocityX(80);
+  this.skater.body.setVelocityX(80);
   this.skateSpeed=80;
   this.recoveryActive=true;
   this.recoveryPressesNeeded=5 + this.recoveryCount *2;
@@ -1067,8 +1067,8 @@ function hitObstacle() {
   const deathSound=Phaser.Math.Between(1,2);
   this.sound.play('death' +deathSound, {volume:0.075});
   this.recoveryCount=0;
-  this.skater.setVelocityX(0);
-  this.skater.setVelocityY(0);
+  this.skater.body.setVelocityX(0);
+  this.skater.body.setVelocityY(0);
   this.physics.pause();
 
   const finalScore =Math.floor(this.score/10);
@@ -1170,16 +1170,18 @@ skipBtn.onclick=()=> {
 function startGrind(skater,rail) {
   if (this.isGrinding) return;
   if (this.grindCooldown>0) return;
-  if (skater.velocity.y<=0) return;
-  if (skater.y>rail.y) return;
+  if (!rail) return;
+  const vel= this.skater.body.velocity.y;
+  if (vel<=0) return;
+  if (this.skater.y>rail.y) return;
   if (this.grindSound) this.grindSound.stop();
   this.grindSound=this.sound.add('grind',{loop:true, volume:0.3});
   this.grindSound.play();
   this.isGrinding=true;
   this.currentRail=rail;
-  skater.velocityY=0;
-  skater.setAllowGravity(false);
-  skater.y=rail.y -(rail.height *rail.scaleY/2)-30;
+  this.skater.body.velocityY=0;
+  this.skater.body.setAllowGravity(false);
+  this.skater.y=rail.y -(rail.height *rail.scaleY/2)-30;
 }
 
 // PHASER CONFIG
