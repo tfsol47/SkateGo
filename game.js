@@ -216,6 +216,7 @@ preload() {
   this.load.image('bg4','bg4.png');
   this.load.image('bg5','bg5.png');
   this.load.image('staring', 'staring.png');
+  this.load.image('trashcan', 'trashcan.png')
 
 }
 
@@ -826,10 +827,17 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
     }
 
     if (this.skater.x+1200 > this.nextRailX) {
-      const rail=this.add.image(this.nextRailX, GROUND_Y-46, 'bench').setDepth(7).setScale(2);
+      const useTrashcan =Phaser.Math.Between(0,1)===1;
+      const railImg= useTrashcan ? 'trashcan' : 'bench';
+      const railY= useTrashcan ? GROUND_Y-48 : GROUND_Y-46;
+      const railW= useTrashcan ? 44:128;
+      const railH=useTrashcan ?10:46;
+      const railScale=useTrashcan ? 1.5:2;
+
+      const rail=this.add.image(this.nextRailX, railY, railImg).setDepth(7).setScale(railScale);
       this.physics.add.existing(rail,true);
-      rail.body.setSize(64*2,46*2);
-      rail.body.reset(this.nextRailX, GROUND_Y-46);
+      rail.body.setSize(railW, railH);
+      rail.body.reset(this.nextRailX, railY);
       this.rails.add(rail);
       this.nextRailX+=Phaser.Math.Between(1200,2000);
       if (Math.abs(this.nextRailX -this.nextObstacleX) <300) {
