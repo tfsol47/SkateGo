@@ -738,7 +738,7 @@ class GameScene extends Phaser.Scene {
     const baseSpeed = Math.min(250 + Math.floor(this.score / 100) * 15, 1000);
     if (this.mobileJump) {
       this.mobileJump=false;
-      if (this.coyoteTimer>0 || this.isGrinding) {
+      if (this.coyoteTimer>0 || this.coyoteTimer>0 || this.isGrinding) {
         this.skater.body.setVelocityY(-750);
         this.coyoteTimer=0;
       }
