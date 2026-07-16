@@ -601,6 +601,10 @@ class GameScene extends Phaser.Scene {
     this.input.keyboard.off('keydown-SPACE', this.boundRecovery);
   });
 
+  //if (isTouchDevice() || W<900) {
+    this.createMobileButtons();
+  //}
+
     //Camera
     this.cameras.main.startFollow(this.skater, true, 0.1, 0.1);
     this.cameras.main.setFollowOffset(-W * 0.18, 0);
@@ -642,6 +646,10 @@ class GameScene extends Phaser.Scene {
     }
 
     if (this.recoveryActive) {
+      if (this.mobileMashBtn) {
+        this.mobileMashBtn.setVisible(this.recoveryActive);
+        this.mobileMashText.setVisible(this.recoveryActive);
+      }
       this.recoveryTimer -= delta;
       if (this.recoveryTimer <= 0) {
         this.recoveryActive=false;
@@ -697,7 +705,71 @@ class GameScene extends Phaser.Scene {
       this.coyoteTimer -= this.game.loop.delta;
     }
 
+    //mobile mapping
+    if (this.mobileJump) {
+      this.mobileJump=false;
+      this.cursors.up.isDown=true;
+      this.time.delayedCall(50, ()=>this.cursors.up.isDown=false);
+    }
+    if (this.mobileSlowing) {
+      this.cursors.down.isDown=true;
+    } else if (!this.cursors.down.JustDown) {
+      this.cursors.down.isDown=false;
+    }
+    if (this.mobileFlip) {
+      if(!this.onGround && !this.isFlipping) {
+        this.isFlipping=true;
+        this.sound.play('whoosh',{volume:0.5});
+        this.flipAngle=0;
+        this.currentTrick=this.mobileFlip;
+        this.landedClean=false;
+        this.player.olliePlayed=false;
+      }
+      this.mobileFlip=null;
+    }
+    if (this.mobileManual) {
+      this.mobileManual=false;
+      if (this.onGround) {
+        this.isManual=true;
+        this.manualScore=0;
+      }
+    }
+
     const baseSpeed = Math.min(250 + Math.floor(this.score / 100) * 15, 1000);
+    if (this.mobileJump) {
+      this.mobileJump=false;
+      if (this.coyoteTimer>0 || this.isGrinding) {
+        this.skater.body.setVelocityY(-750);
+        this.coyoteTimer=0;
+      }
+    }
+    if (this.mobileFlip) {
+      if (!this.onGround && !this.isFlipping) {
+        this.isFlipping=true;
+        this.sound.play('whoosh',{volume:0.5});
+        this.flipAngle=0;
+        this.currentTrick=this.mobileFlip;
+        this.landedClean=false;
+        this.player.olliePlayed=false;
+      }
+      this.mobileFlip=null;
+    }
+    if (this.mobileManual) {
+      this.mobileManual=false;
+      if (this.onGround) {
+        this.isManual=true;
+        this.manualScore=0;
+      }
+    }
+    if (this.mobileSlowing) {
+      this.cursors.down.isDown=true;
+    } else {
+      this.cursors.down.isDown=false;
+    }
+    if (this.mobileMashBtn) {
+      this.mobileMashBtn.setVisible(this.recoveryActive || false);
+      this.mobileMashText.setVisible(this.recoveryActive || false);
+    }
 
     
     if(Phaser.Input.Keyboard.JustDown(this.manualKey)&& this.onGround) {
@@ -959,9 +1031,68 @@ showTrickText(text, points) {
       }
     });
   }
+
+  createMobileButtons() {
+    this.add.text(W/2,H/2, 'buttons init', {
+      fontSize:'20px', fill:'#ff0000', fontFamily:'"Press Start 2P"'
+    }).setScrollFactor(0).setDepth(100);
+    const btnAlpha=1;
+    const btnDepth=50;
+
+    //slow down button
+    const slowBtn=this.add.rectangle(80,H-80,120,80,0x222222, btnAlpha).setScrollFactor(0).setDepth(btnDepth).setInteractive();
+    this.add.text(80,H-80, 'SLOW', {
+      fontSize:'10px', fill:'#ffffff', fontFamily:'"Press Start 2P"'
+    }).setOrigin(0.5).setScrollFactor(0).setDepth(btnDepth+1);
+
+    //jump button
+    const jumpBtn= this.add.rectangle(W-80, H-120, 130, 100, 0x1a1a2e, btnAlpha).setScrollFactor(0).setDepth(btnDepth).setInteractive();
+    this.add.text(W-80, H-120, 'JUMP', {
+      fontSize:'10px', fill:'#04f9f9',fontFamily:'"Press Start 2P"'
+    }).setOrigin(0.5).setScrollFactor(0).setDepth(btnDepth+1);
+
+    //flip button
+    const flipBtn=this.add.rectangle(W-220, H-80,110,70,0x1a2e1a,btnAlpha).setScrollFactor(0).setDepth(btnDepth).setInteractive();
+    this.add.text(W-220,H-80, 'FLIP', {
+      fontSize:'10px', fill:'#0af50a',fontFamily:'"Press Start 2P"'
+    }).setOrigin(0.5).setScrollFactor(0).setDepth(btnDepth+1);
+
+    //manual button
+    const manualBtn=this.add.rectangle(W-360, H-80,110,70,0x2e1a00,btnAlpha).setScrollFactor(0).setDepth(btnDepth).setInteractive();
+    this.add.text(W-360, H-80, 'MANUAL', {
+      fontSize:'8px', fill:'#f86300', fontFamily:'"Press Start 2P"'
+    }).setOrigin(0.5).setScrollFactor(0).setDepth(btnDepth+1);
+
+    //mash button
+    this.mobileMashBtn=this.add.rectangle(W/2, H*0.7,200,80,0xff0000,0.7).setScrollFactor(0).setDepth(btnDepth).setInteractive().setVisible(false);
+    this.mobileMashText=this.add.text(W/2,H*0.7, 'MASH', {
+      fontSize:'16px', fill:'#ffffff', fontFamily:'"Press Start 2P"'
+    }).setOrigin(0.5).setScrollFactor(0).setDepth(btnDepth+1).setVisible(false);
+
+    //button events
+    slowBtn.on('pointerdown',()=>this.mobileSlowing=true);
+    slowBtn.on('pointerup',()=>this.mobileSlowing=false);
+    slowBtn.on('pointerout',()=>this.mobileSlowing=false);
+
+    jumpBtn.on('pointerdown', ()=>this.mobileJump=true);
+
+    flipBtn.on('pointerdown',()=> {
+      this.mobileFlip=Math.random()<0.5 ? 'kickflip' :'heelflip';
+    });
+
+    manualBtn.on('pointerdown', ()=>this.mobileManual=true);
+
+    this.mobileMashBtn.on('pointerdown',()=>this.handleRecoveryInput());
+
+    this.mobileJump=false;
+    this.mobileSlowing=false;
+    this.mobileFlip=null;
+    this.mobileManual=false;
+  }
+
 }
 
-//HIT OBSTACLE (change in the future)
+//HIT OBSTACLE
 function hitObstacle() {
   if (!this.alive) return;
   this.alive = false;
@@ -1098,5 +1229,9 @@ const config = {
   },
   scene: [MenuScene, GameScene]
 };
+
+function isTouchDevice() {
+  return ('ontouchstart' in window) || navigator.maxTouchPoints>0;
+}
 
 const game = new Phaser.Game(config);
