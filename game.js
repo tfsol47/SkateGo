@@ -152,6 +152,8 @@ class MenuScene extends Phaser.Scene {
     this.add.image(W/2,H/2,'bg4').setDisplaySize(W,H).setDepth(0);
     this.add.image(W/2,H/2,'bg5').setDisplaySize(W,H).setDepth(0);
 
+    this.add.image(W*0.25, H*0.838, 'staring').setScale(5).setDepth(4);
+
     //right panel menu
     const panelW= W*0.38;
     const panelX= W-panelW;
@@ -213,6 +215,8 @@ preload() {
   this.load.image('bg3','bg3.png');
   this.load.image('bg4','bg4.png');
   this.load.image('bg5','bg5.png');
+  this.load.image('staring', 'staring.png');
+
 }
 
 async fetchLeaderboard() {
@@ -315,8 +319,6 @@ class GameScene extends Phaser.Scene {
     this.load.spritesheet('manual_grind', 'manual_grind.png', {
       frameWidth:42, frameHeight: 57
     });
-
-
 
   }
 
