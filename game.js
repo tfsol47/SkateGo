@@ -525,7 +525,7 @@ class GameScene extends Phaser.Scene {
 
 
     //Controls
-    this.cursors= this.input.Keyboard? this.input.keyboard.createCursorKeys() : {};
+    this.cursors= this.input.keyboard.createCursorKeys();
     this.kickflipKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.K);
     this.heelflipKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.H);
     this.manualKey=this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.M)
@@ -575,7 +575,7 @@ class GameScene extends Phaser.Scene {
     this.speedText = this.add.text(16, 44, 'SPEED: 1', {
       fontSize: '16px', fill: C.hudColor, fontFamily: '"Press Start 2P"'
     }).setScrollFactor(0).setDepth(20);
-    this.highScore=parseInt(localStorage.getItem('highscore')) || 0;
+    this.highScore=parseInt(localStorage.getItem('highScore')) || 0;
 
     //Pause
     this.pauseKey= this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
@@ -597,13 +597,14 @@ class GameScene extends Phaser.Scene {
       this.controlsBtn.setStyle({fill:this.showControls ? '#0bffff' : '#ffffff'});
     });
 
+    this.boundRecovery=this.handleRecoveryInput.bind(this);
+    this.input.keyboard.on('keydown-SPACE', this.boundRecovery);
     this.events.on('shutdown', ()=>{
     this.input.keyboard.off('keydown-SPACE', this.boundRecovery);
   });
 
-  //if (isTouchDevice() || W<900) {
-    this.createMobileButtons();
-  //}
+    if (isTouchDevice()) this.createMobileButtons();
+    this.mobileJumping=false;
 
     //Camera
     this.cameras.main.startFollow(this.skater, true, 0.1, 0.1);
@@ -612,9 +613,6 @@ class GameScene extends Phaser.Scene {
 
   update(time, delta) {
     if (!this.alive) return;
-    if (this.recoveryActive && Phaser.Input.Keyboard.JustDown(this.cursors.space)) {
-      this.handleRecoveryInput();
-    }
     if (Phaser.Input.Keyboard.JustDown(this.pauseKey)) {
       if(this.isPaused) {
         this.isPaused=false;
@@ -661,7 +659,7 @@ class GameScene extends Phaser.Scene {
       }
     }
 
-    const body = this.skater.body;
+    const body = this.skater;
     this.onGround = body.blocked.down;
 
     //landings
@@ -706,41 +704,14 @@ class GameScene extends Phaser.Scene {
     }
 
     //mobile mapping
-    if (this.mobileJump) {
-      this.mobileJump=false;
-      this.cursors.up.isDown=true;
-      this.time.delayedCall(50, ()=>this.cursors.up.isDown=false);
-    }
-    if (this.mobileSlowing) {
-      this.cursors.down.isDown=true;
-    } else if (!this.cursors.down.JustDown) {
-      this.cursors.down.isDown=false;
-    }
-    if (this.mobileFlip) {
-      if(!this.onGround && !this.isFlipping) {
-        this.isFlipping=true;
-        this.sound.play('whoosh',{volume:0.5});
-        this.flipAngle=0;
-        this.currentTrick=this.mobileFlip;
-        this.landedClean=false;
-        this.player.olliePlayed=false;
-      }
-      this.mobileFlip=null;
-    }
-    if (this.mobileManual) {
-      this.mobileManual=false;
-      if (this.onGround) {
-        this.isManual=true;
-        this.manualScore=0;
-      }
-    }
-
     const baseSpeed = Math.min(250 + Math.floor(this.score / 100) * 15, 1000);
     if (this.mobileJump) {
       this.mobileJump=false;
-      if (this.coyoteTimer>0 || this.coyoteTimer>0 || this.isGrinding) {
-        this.skater.body.setVelocityY(-750);
+      if (this.onGround || this.coyoteTimer>0 || this.isGrinding) {
+        this.skater.setVelocityY(-750);
         this.coyoteTimer=0;
+        this.mobileJumping=true;
+        this.time.delayedCall(400, ()=>this.mobileJumping=false);
       }
     }
     if (this.mobileFlip) {
@@ -756,10 +727,8 @@ class GameScene extends Phaser.Scene {
     }
     if (this.mobileManual) {
       this.mobileManual=false;
-      if (this.onGround) {
         this.isManual=true;
         this.manualScore=0;
-      }
     }
     if (this.mobileSlowing) {
       this.cursors.down.isDown=true;
@@ -807,8 +776,8 @@ if (
     if (this.isGrinding) {
       this.isGrinding=false;
       this.currentRail=null;
-      this.skater.body.setAllowGravity(true);
-      this.skater.body.setVelocityY(-600);
+      this.skater.setAllowGravity(true);
+      this.skater.setVelocityY(-600);
       this.showTrickText('50-50 GRIND', Math.floor(this.grindScore));
       this.grindCooldown=200;
       this.grindScore=0;
@@ -820,7 +789,7 @@ if (
 }
 
 // Cut the jump short if the player lets go early
-if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown)) {
+if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown && !this.mobileJumping)) {
   body.setVelocityY(body.velocity.y *0.6);
 }
 //gravity multiplier
@@ -843,7 +812,7 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
     if (this.currentRail && this.skater.x > this.currentRail.x+100) {
       this.isGrinding=false;
       this.currentRail=null;
-      this.skater.body.setAllowGravity(true);
+      this.skater.setAllowGravity(true);
       this.showTrickText('50-50 GRIND', Math.floor(this.grindScore));
       this.grindCooldown=200;
       this.grindScore=0;
@@ -945,7 +914,7 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
 
 //RECOVERY
 startRecovery() {
-  this.skater.body.setVelocityX(80);
+  this.skater.setVelocityX(80);
   this.skateSpeed=80;
   this.recoveryActive=true;
   this.recoveryPressesNeeded=5 + this.recoveryCount *2;
@@ -1098,8 +1067,8 @@ function hitObstacle() {
   const deathSound=Phaser.Math.Between(1,2);
   this.sound.play('death' +deathSound, {volume:0.075});
   this.recoveryCount=0;
-  this.skater.body.setVelocityX(0);
-  this.skater.body.setVelocityY(0);
+  this.skater.setVelocityX(0);
+  this.skater.setVelocityY(0);
   this.physics.pause();
 
   const finalScore =Math.floor(this.score/10);
@@ -1132,7 +1101,7 @@ function hitObstacle() {
 
   input.style.left=(W/2-120) +'px'
   input.style.top=(H*0.57) +'px'
-  input.style.wdith='180px';
+  input.style.width='180px';
 
   btn.style.left=(W/2 +70) +'px';
   btn.style.top= (H*0.57) +'px';
@@ -1201,15 +1170,15 @@ skipBtn.onclick=()=> {
 function startGrind(skater,rail) {
   if (this.isGrinding) return;
   if (this.grindCooldown>0) return;
-  if (skater.body.velocity.y<=0) return;
+  if (skater.velocity.y<=0) return;
   if (skater.y>rail.y) return;
   if (this.grindSound) this.grindSound.stop();
   this.grindSound=this.sound.add('grind',{loop:true, volume:0.3});
   this.grindSound.play();
   this.isGrinding=true;
   this.currentRail=rail;
-  skater.body.velocityY=0;
-  skater.body.setAllowGravity(false);
+  skater.velocityY=0;
+  skater.setAllowGravity(false);
   skater.y=rail.y -(rail.height *rail.scaleY/2)-30;
 }
 
