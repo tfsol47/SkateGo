@@ -525,7 +525,7 @@ class GameScene extends Phaser.Scene {
 
 
     //Controls
-    this.cursors= this.input.keyboard.createCursorKeys();
+    this.cursors= this.input.Keyboard? this.input.keyboard.createCursorKeys() : {};
     this.kickflipKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.K);
     this.heelflipKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.H);
     this.manualKey=this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.M)
@@ -1033,9 +1033,6 @@ showTrickText(text, points) {
   }
 
   createMobileButtons() {
-    this.add.text(W/2,H/2, 'buttons init', {
-      fontSize:'20px', fill:'#ff0000', fontFamily:'"Press Start 2P"'
-    }).setScrollFactor(0).setDepth(100);
     const btnAlpha=1;
     const btnDepth=50;
 
