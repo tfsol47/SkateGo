@@ -197,13 +197,33 @@ class MenuScene extends Phaser.Scene {
     });
 
     //leaderboard
-    this.add.text(cx, H*0.55, 'TOP 10', {
+    this.add.text(cx, H*0.62, 'TOP 10', {
       fontSize:'13px', fill: '#ffff2a', fontFamily:'"Press Start 2P"'
     }).setOrigin(0.5).setDepth(6);
 
-    this.lbText=this.add.text(cx, H*0.62, 'loading..', {
+    this.lbText=this.add.text(cx, H*0.69, 'loading..', {
       fontSize:'10px', fill: '#cccccc', fontFamily: '"Press Start 2P"', align: 'left', lineSpacing: 8
     }).setOrigin(0.5, 0).setDepth(6);
+
+    const creditsBtn=this.add.rectangle(cx, H*0.54, panelW*0.75, 40, 0x111111).setInteractive().setDepth(6);
+    this.add.text(cx, H*0.54, 'CREDITS', {
+      fontSize:'12px', fill:'#a49b9b',fontFamily:'"Press Start 2P"'
+    }).setOrigin(0.5).setDepth(7);
+
+    creditsBtn.on('pointerover', ()=>creditsBtn.setFillStyle(0x222222));
+    creditsBtn.on('pointerout',()=> creditsBtn.setFillStyle(0x111111));
+    creditsBtn.on('pointerdown',()=> {
+      this.creditsPanel.setVisible(!this.creditsVisible);
+      this.creditsVisible=!this.creditsVisible;
+    });
+
+    this.creditsVisible=false;
+    this.creditsPanel=this.add.text(cx, H*0.59, 'SKATE GO\n\n' +
+    'GAME / SPRITES / ART\nVICENTE DELGADO\n\n' + 'BOARD SPRITES\nSOVIETSHNUCKUMS\nitch.io\n\n' +
+    'MUSIC\nKAIBB\nitch.io\n\n' + 'CITY BG\nFREE GAME ASSESTS\nitch.io', {
+      fontSize:'8px',fill:'#d9d1d1', fontFamily:'"Press Start 2P"', align:'center', lineSpacing:6,
+      backgroundColor:'#000000', padding:{x:10,y:10}
+    }).setOrigin(0.5,0).setDepth(8).setVisible(false);
 
     this.fetchLeaderboard();
     this.cameras.main.fadeIn(1200,0,0,0);
