@@ -555,7 +555,7 @@ class GameScene extends Phaser.Scene {
     this.speedText = this.add.text(16, 44, 'SPEED: 1', {
       fontSize: '16px', fill: C.hudColor, fontFamily: '"Press Start 2P"'
     }).setScrollFactor(0).setDepth(20);
-    this.highScore=0;
+    this.highScore=parseInt(localStorage.getItem('highscore')) || 0;
 
     //Pause
     this.pauseKey= this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
@@ -956,6 +956,7 @@ function hitObstacle() {
 
   const finalScore =Math.floor(this.score/10);
   if (finalScore> this.highScore) this.highScore=finalScore;
+  localStorage.setItem('highScore', this.highScore)
 
   //dark overlay
   this.add.rectangle(0,0,W,H, 0x000000, 0.85).setOrigin(0,0).setScrollFactor(0).setDepth(28);
