@@ -146,7 +146,7 @@ class MenuScene extends Phaser.Scene {
   create() {
     const bgScale=H/324;
 
-    this.add.image(W/2,H/2,'bg1').setDisplaySize(W,H).setDepth(0);
+    this.clouds=this.add.tileSprite(0,0,W,H,'bg1').setOrigin(0,0).setDepth(0).setScale(2.5)
     this.add.image(W/2,H/2,'bg2').setDisplaySize(W,H).setDepth(0);
     this.add.image(W/2,H/2,'bg3').setDisplaySize(W,H).setDepth(0);
     this.add.image(W/2,H/2,'bg4').setDisplaySize(W,H).setDepth(0);
@@ -227,6 +227,10 @@ class MenuScene extends Phaser.Scene {
 
     this.fetchLeaderboard();
     this.cameras.main.fadeIn(1200,0,0,0);
+  }
+
+  update() {
+    this.clouds.tilePositionX +=0.02;
   }
 
 preload() {
@@ -879,7 +883,7 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
       obs.body.setSize(22,40);
       obs.body.setOffset(14,6);
       this.obstacles.add(obs);
-      this.nextObstacleX += Phaser.Math.Between(500, 900);
+      this.nextObstacleX += Phaser.Math.Between(700, 1100);
       if (Math.abs(this.nextObstacleX -this.nextRailX) <300) {
         this.nextObstacleX=this.nextRailX+400;
       }
