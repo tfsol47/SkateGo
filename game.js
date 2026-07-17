@@ -574,6 +574,8 @@ class GameScene extends Phaser.Scene {
     this.comboTimer=0;
     this.comboTimerMax=2250;
     this.combo=0;
+    this.comboMultiplier=1;
+    this.lastTrick=null;
 
     this.comboText = this.add.text(W/2, H*0.15, '', {
       fontSize: '20px',
@@ -703,6 +705,10 @@ class GameScene extends Phaser.Scene {
         if (this.comboTimer <=0) {
         this.comboBarBg.setVisible(false);
         this.comboBar.setVisible(false);
+        this.combo=0;
+        this.comboMultiplier=1;
+        this.lastTrick=null;
+        this.comboText.setText('');
       }
     } else {
       this.comboBarBg.setVisible(false);
@@ -772,6 +778,12 @@ class GameScene extends Phaser.Scene {
    if(this.recoveryActive){
       this.skateSpeed=30;
     } else if (this.cursors.down.isDown && this.onGround) {
+      if (this.cursors.down.isDown && this.onGround && this.combo>0) {
+        this.combo=0;
+        this.comboMultiplier=1;
+        this.lastTrick=null;
+        this.comboText.setText('');
+      }
   this.skateSpeed = Math.max(80, (this.skateSpeed || baseSpeed) * 0.985);
 } else {
   this.skateSpeed = baseSpeed;
@@ -875,17 +887,26 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
         this.combo+=1;
         this.comboTimer=this.comboTimerMax;
         const name=trickNames[this.currentTrick];
-        const pts =trickPoints[this.currentTrick] * this.combo;
 
+        if (this.lastTrick===this.currentTrick) {
+          const pts=trickPoints [this.currentTrick];
         this.showTrickText(name,pts);
-        const speedLevel= Math.floor(this.score /50)+1;
-        if (speedLevel>= 8) {
-          const intensity=Math.min((speedLevel-8)*3, 20);
-          this.speedLines.emitParticleAt(W* Math.random(), H*Math.random(), intensity);
+        this.score+=pts;
+        this.showTrickText('SAME TRICK, BOORINGG', -0);
+        }else {
+          this.comboMultiplier+=0.5;
+          const pts=Math.floor(trickPoints[this.currentTrick]*this.comboMultiplier);
+          this.showTrickText(name,pts);
+          if (this.lastTrick!==null) {
+            this.showTrickText('VARIETY BONUS +20', 20);
+            this.score+=20;
+          }
+          this.score+=pts;
         }
-        this.score += pts;
+
+        this.lastTrick=this.currentTrick;
         this.currentTrick=null;
-        this.comboText.setText('COMBO x' + this.combo);
+        this.comboText.setText('COMBO x'+this.combo+' ('+this.comboMultiplier+'x)');
       }
     } else {
       this.player.update(this.cursors, false, 0, body.velocity.y, null,this.isManual,this.isGrinding,this.onGround,);
@@ -1082,6 +1103,8 @@ showTrickText(text, points) {
 function hitObstacle() {
   if (!this.alive) return;
   this.alive = false;
+  this.combo=0;
+  this.comboMultiplier=1;
   this.cruisingSound.stop();
   if (this.currentMusic) this.currentMusic.pause();
   const deathSound=Phaser.Math.Between(1,2);
