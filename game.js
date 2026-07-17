@@ -576,6 +576,12 @@ class GameScene extends Phaser.Scene {
     this.comboTimer=0;
     this.comboTimerMax=2250;
     this.combo=0;
+    this.trickCounts={kickflip:0,heelflip:0};
+    this.totalTricks=0;
+    this.highestCombo=0;
+    this.longestGrind=0;
+    this.totalGrinds=0;
+    this.playerName='ANONYMOUS';
     this.comboMultiplier=1;
     this.lastTrick=null;
 
@@ -808,6 +814,7 @@ if (
       this.showTrickText('50-50 GRIND', Math.floor(this.grindScore));
       this.grindCooldown=200;
       this.grindScore=0;
+      this.totalGrinds+=1;
       this.comboText.setText('');
       if (this.grindSound) this.grindSound.stop();
       this.player.olliePlayed=false;
@@ -829,6 +836,7 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
     if (this.isGrinding) {
       this.skater.y=this.currentRail.y- (this.currentRail.height*this.currentRail.scaleY/2)-30;
       this.grindScore += 1;
+      if (this.grindScore> this.longestGrind) this.longestGrind=this.grindScore;
       this.score+=0.01;
       this.sparks.emitParticleAt(this.skater.x+20,this.skater.y+30,10);
       this.sparks.emitParticleAt(this.skater.x-20,this.skater.y+30,10);
@@ -843,6 +851,7 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
       this.showTrickText('50-50 GRIND', Math.floor(this.grindScore));
       this.grindCooldown=200;
       this.grindScore=0;
+      this.totalGrinds+=1;
       this.comboText.setText('');
      if (this.grindSound) this.grindSound.stop();
      this.player.olliePlayed=false;
@@ -888,6 +897,7 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
 
         this.combo+=1;
         this.comboTimer=this.comboTimerMax;
+        if (this.combo> this.highestCombo) this.highestCombo=this.combo;
         const name=trickNames[this.currentTrick];
 
         if (this.lastTrick===this.currentTrick) {
@@ -906,6 +916,8 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
           this.score+=pts;
         }
 
+        this.trickCounts[this.currentTrick]+=1;
+        this.totalTricks+=1;
         this.lastTrick=this.currentTrick;
         this.currentTrick=null;
         this.comboText.setText('COMBO x'+this.combo+' ('+this.comboMultiplier+'x)');
@@ -1115,111 +1127,138 @@ showTrickText(text, points) {
 //HIT OBSTACLE
 function hitObstacle() {
   if (!this.alive) return;
-  this.alive = false;
-  this.combo=0;
-  this.comboMultiplier=1;
+  this.alive=false;
+  this.speedLines.stop();
+  this.sparks.stop();
+  this.dust.stop();
   this.cruisingSound.stop();
   if (this.currentMusic) this.currentMusic.pause();
-  const deathSound=Phaser.Math.Between(1,2);
-  this.sound.play('death' +deathSound, {volume:0.075});
+  const deathSound= Phaser.Math.Between(1,2);
+  this.sound.play('death'+ deathSound, {volume:0.075});
   this.recoveryCount=0;
   this.skater.body.setVelocityX(0);
   this.skater.body.setVelocityY(0);
   this.physics.pause();
+  this.combo=0;
+  this.comboMultiplier=1;
 
-  const finalScore =Math.floor(this.score/10);
-  if (finalScore> this.highScore) this.highScore=finalScore;
-  localStorage.setItem('highScore', this.highScore)
+  const finalScore=Math.floor(this.score/10);
+  if (finalScore>this.highScore) this.highScore=finalScore;
+  localStorage.setItem('highScore', this.highScore);
 
-  //dark overlay
-  this.add.rectangle(0,0,W,H, 0x000000, 0.85).setOrigin(0,0).setScrollFactor(0).setDepth(28);
+  //figure out fav trick
+  const favTrick=this.trickCounts.kickflip >=this.trickCounts.heelflip ? 'KICKFLIP' :'HEELFLIP';
+  const totalTricksDone=this.totalTricks;
 
-  //score text
-  this.add.text(W / 2, H * 0.2, 'FAILED!', {
-    fontSize: '48px', fill: '#ff0000', fontFamily: '"Press Start 2P"'
-  }).setOrigin(0.5).setScrollFactor(0).setDepth(30);
+  //final grade
+  const scorePct=Math.min(finalScore/500, 1)*40;
+  const comboPct= Math.min(this.highestCombo/10,1)*25;
+  const varietyPct= (this.trickCounts.kickflip> 0 && this.trickCounts.heelflip>0) ? 20:0;
+  const grindPct=Math.min(this.longestGrind/200,1)*15;
+  const total=scorePct+comboPct+varietyPct+grindPct;
+
+  let grade;
+  if (total>=90) grade='S';
+  else if (total >=75) grade='A';
+  else if (total>=60) grade= 'B';
+  else if (total>=45) grade='C';
+  else if (total>= 30) grade='D';
+  else grade='F';
+  const gradeColors={'S':'#a914ff', 'A':'#44b1ff', 'B':'#3ea300', 'C': '#ffed22', 'D': '#ff6f00', 'F': '#ff0000'};
+
+  //overlay
+  this.add.rectangle(0,0,W,H,0x000000, 0.85).setOrigin(0,0).setScrollFactor(0).setDepth(28);
+
+  //report card
+  const cardH= H*0.75;
+  const cardY= H*0.12;
+  const cardX=W/2;
   
-  this.add.text(W / 2, H * 0.32, 'SCORE: ' +finalScore, {
-    fontSize: '24px', fill: '#ffffff', fontFamily: '"Press Start 2P"'
-  }).setOrigin(0.5).setScrollFactor(0).setDepth(30);
+  const card=this.add.container(cardX, H+cardH).setScrollFactor(0).setDepth(30);
+  const cardBg= this.add.rectangle(0,0, Math.min(W*0.7, 500), cardH, 0x111111).setStrokeStyle(2, 0xffffff);
+  const title= this.add.text(0, -cardH* 0.44, 'SKATE GO ACADEMY', {
+    fontSize:'20px',fill:'#ffffff',fontFamily:'"Press Start 2P"'
+  }).setOrigin(0.5);
 
-  this.add.text(W/2, H*0.4, 'BEST: ' + this.highScore, {
-    fontSize: '18px', fill: '#ffff00', fontFamily: '"Press Start 2P"'
-  }).setOrigin(0.5).setScrollFactor(0).setDepth(30);
+  const studentText=this.add.text(0,-cardH*0.36, 'STUDENT: '+ this.playerName, {
+    fontSize:'14px',fill:'#aba7a7',fontFamily:'"Press Start 2P"'
+  }).setOrigin(0.5);
+  const divider=this.add.rectangle(0,-cardH* 0.3, Math.min(W* 0.6,460),2,0x444444);
 
-  this.add.text(W / 2, H * 0.52, 'ENTER YOUR NAME or skip :(', {
-    fontSize: '13px', fill: '#aaaaaa', fontFamily: '"Press Start 2P"'
-  }).setOrigin(0.5).setScrollFactor(0).setDepth(30);
+  const stats=[{label:'SCORE',value:finalScore}, {label:'FAV TRICK', value:favTrick},
+    {label: 'TOTAL TRICKS', value:totalTricksDone}, {label: 'HIGHEST COMBO', value:'x'+ this.highestCombo},
+    {label:'LONGEST GRIND',value:Math.floor(this.longestGrind)}, {label:'TOTAL GRINDS',value:this.totalGrinds},
+  ];
+  const statItems=[];
+  stats.forEach((s,i)=> {const y= -cardH*0.2 +i*(cardH*0.09);
+    const lbl= this.add.text(-Math.min(W*0.28, 200),y,s.label, {fontSize:'15px',fill:'#a3a1a1',fontFamily:'"Press Start 2P"'
+  }).setOrigin(0,0.5);
+  const val=this.add.text(Math.min(W*0.28, 200),y, String(s.value),{fontSize:'15px',fill:'#ffffff',fontFamily:'"Press Start 2P"'}).setOrigin(1,0.5);
+  statItems.push(lbl,val);
+});
+const divider2=this.add.rectangle(0,cardH* 0.28,Math.min(W*0.6, 460),2,0x444444);
+const gradeLabel= this.add.text(-Math.min(W*0.28,200),cardH*0.35, 'FINAL GRADE', {fontSize:'15px', fill:'#a8a5a5',fontFamily:'"Press Start 2P"'}).setOrigin(-.5,0.5);
+const gradeVal=this.add.text(-Math.min(W*0.29,167),cardH*0.35, grade, {fontSize:'48px', fill:gradeColors[grade],fontFamily:'"Press Start 2P"'}).setOrigin(1,0.5);
+card.add([cardBg,title, studentText,divider,divider2,gradeLabel, gradeVal, ...statItems]);
 
-  const input=document.getElementById('player-name');
-  const btn=document.getElementById('submit-score');
-  const wrap=document.getElementById('name-input');
+//slide in
+this.tweens.add({
+  targets:card, y:cardY+cardH/2, duration:600, ease:'Back.easeOut'
+});
 
-  input.style.left=(W/2-120) +'px'
-  input.style.top=(H*0.57) +'px'
-  input.style.width='180px';
+//name input
+const input=document.getElementById('player-name');
+const btn= document.getElementById('submit-score');
+const wrap=document.getElementById('name-input');
+input.style.left=(W/2- 120)+'px';
+input.style.top=(H* 0.88)+'px';
+btn.style.left=(W/ 2+70)+'px';
+btn.style.top= (H*0.88)+'px';
+wrap.style.display='block';
+input.value='';
+input.focus();
 
-  btn.style.left=(W/2 +70) +'px';
-  btn.style.top= (H*0.57) +'px';
+const scene=this;
 
-  wrap.style.display='block';
-  input.value='';
-  input.focus();
+async function submitScore() {
+  const name=input.value.trim().toUpperCase().substring(0,10);
+  if(!name) return;
+  scene.playerName=name;
+  studentText.setText('STUDENT: ' +name);
 
-  const scene=this;
+  if(finalScore< 50){wrap.style.display='none';
+    return;
+  }
+  wrap.style.display='none';
+  const {error}= await db.from('scores').insert({name,score:finalScore});
+  if (error) {scene.add.text(W/2, H*0.91, 'failed to submit :(', {fontSize:'10px',fill:'#ed0909',fontFamily:'"Press Start 2P"'
+  }).setOrigin(0.5).setScrollFactor(0).setDepth(31);
+  }else {
+    scene.add.text(W/2, H* 0.91, 'score submitted!!',{ fontSize:'10px',fill:'#10d410',fontFamily:'"Press Start 2P"'}).setOrigin(0.5).setScrollFactor(0).setDepth(31);
+  }
+  showContinue();
+}
 
-  async function submitScore() {
-    const name=input.value.trim().toUpperCase().substring(0,10);
-    if (!name) return;
-    if (finalScore <50) {
-      wrap.style.display='none';
-      scene.add.text(W/2, H*0.65, 'score too low to submit, sorry', {
-        fontSize:'12px',fill:'#aaaaaa',fontFamily:'"Press Start 2P"'
-      }).setOrigin(0.5).setScrollFactor(0).setDepth(30);
-      return;
-    }
-
-    wrap.style.display='none';
-
-    const {error} =await db.from('scores').insert({name, score:finalScore});
-
-    if (error) {
-      scene.add.text(W/2, H*0.65, 'failed to submit :(', {
-        fontSize:'12px', fill:'#ff0000', fontFamily: '"Press Start 2P"'
-      }).setOrigin(0.5).setScrollFactor(0).setDepth(30);
-    } else {
-      scene.add.text(W/2, H*0.65, 'score submitted :)', {
-        fontSize:'12px', fill: '#00ff00', fontFamily: '"Press Start 2P"'
-      }).setOrigin(0.5).setScrollFactor(0).setDepth(30);
-    }
-
-    scene.add.text(W/2, H*0.75, 'PRESS ANY KEY TO CONTINUE', {
-    fontSize:'13px', fill:'#ffffff', fontFamily:'"Press Start 2P"'
-  }).setOrigin(0.5).setScrollFactor(0).setDepth(30);
-
-  scene.input.keyboard.once('keydown', ()=> {
-    scene.cameras.main.fade(1200,0,0,0);
+function showContinue() {wrap.style.display='none';
+  const skipBtn=document.getElementById('skip-score');
+  skipBtn.style.display='none';
+  scene.add.text(W/2, H*0.93, 'PRESS ANY KEY TO CONTINUE', {fontSize:'10px',fill:'#fffbfb',fontFamily:'"Press Start 2P"'
+  }).setOrigin(0.5).setScrollFactor(0).setDepth(31);
+  scene.input.keyboard.once('keydown',function() {
+    scene.cameras.main.fade (1200,0,0,0);
     scene.time.delayedCall(1200, ()=> scene.scene.start('MenuScene'));
   });
 }
 
 btn.onclick=submitScore;
-input.onkeydown=(e)=> {if (e.key==='Enter') submitScore();};
-
+input.onkeydown= (e)=> {if(e.key==='Enter') submitScore();};
 const skipBtn= document.getElementById('skip-score');
-skipBtn.style.left=(W/2-40) +'px';
-skipBtn.style.top=(H*0.64) +'px';
+skipBtn.style.left=(W/2- 40)+'px';
+skipBtn.style.top= (H*0.93) +'px';
 skipBtn.style.display='block';
-skipBtn.onclick=()=> {
-  wrap.style.display='none';
-  skipBtn.style.display='none';
-  scene.add.text(W/2, H*0.75, 'PRESS ANY KEY', {
-    fontSize:'13px', fill:'#ffffff', fontFamily:'"Press Start 2P"'
-  }).setOrigin(0.5).setScrollFactor(0).setDepth(30);
-  scene.input.keyboard.once('keydown', ()=> {
-    scene.cameras.main.fade(1200,0,0,0);
-    scene.time.delayedCall(1200, ()=> scene.scene.start('MenuScene'));
-  });
+skipBtn.onclick= ()=> {
+  scene.playName='ANONYMOUS';
+  showContinue();
 };
 }
 
