@@ -725,10 +725,8 @@ class GameScene extends Phaser.Scene {
       }
       this.mobileFlip=null;
     }
-    if (this.mobileManual) {
-      this.mobileManual=false;
+    if (this.mobileManual && this.onGround) {
         this.isManual=true;
-        this.manualScore=0;
     }
     if (this.mobileSlowing) {
       this.cursors.down.isDown=true;
@@ -789,7 +787,7 @@ if (
 }
 
 // Cut the jump short if the player lets go early
-if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown && !this.mobileJumping)) {
+if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown || this.mobileJumping)) {
   body.setVelocityY(body.velocity.y *0.6);
 }
 //gravity multiplier
@@ -1047,6 +1045,8 @@ showTrickText(text, points) {
     });
 
     manualBtn.on('pointerdown', ()=>this.mobileManual=true);
+    manualBtn.on('pointerup', ()=>this.mobileManual=false);
+    manualBtn.on('pointerout',()=>this.mobileManual)=false;
 
     this.mobileMashBtn.on('pointerdown',()=>this.handleRecoveryInput());
 
