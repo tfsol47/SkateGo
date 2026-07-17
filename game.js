@@ -880,7 +880,7 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
         this.showTrickText(name,pts);
         const speedLevel= Math.floor(this.score /50)+1;
         if (speedLevel>= 8) {
-          const intensity=Math.min(speedLevel-8, 6);
+          const intensity=Math.min((speedLevel-8)*3, 20);
           this.speedLines.emitParticleAt(W* Math.random(), H*Math.random(), intensity);
         }
         this.score += pts;
