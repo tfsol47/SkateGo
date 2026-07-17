@@ -511,6 +511,17 @@ class GameScene extends Phaser.Scene {
 
     }).setDepth(10);
 
+    const linePx=this.make.graphics({x:0,y:0,add: false});
+    linePx.fillRect(0xffffff)
+    linePx.fillRect(0,0,40,2);
+    linePx.generateTexture('speedline',40,2);
+    linePx.destroy();
+
+    this.speedLines= this.add.particles(0,0,'speedline', {
+      x:{min:0, max:W},y:{min:0, max:H},speedX:{min:-2000,max:-1500},
+      speedY:0, lifespan:200, quantity:0,scale:{start:1,end:0.5}, alpha:{start:0.4,end:0},
+    }).setScrollFactor(0).setDepth(15);
+
     this.physics.add.collider(this.skater, ground);
 
     //Obstacles
@@ -867,6 +878,11 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
         const pts =trickPoints[this.currentTrick] * this.combo;
 
         this.showTrickText(name,pts);
+        const speedLevel= Math.floor(this.score /50)+1;
+        if (speedLevel>= 8) {
+          const intensity=Math.min(speedLevel-8, 6);
+          this.speedLines.emitParticleAt(W* Math.random(), H*Math.random(), intensity);
+        }
         this.score += pts;
         this.currentTrick=null;
         this.comboText.setText('COMBO x' + this.combo);
