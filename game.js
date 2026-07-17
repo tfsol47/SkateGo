@@ -1151,18 +1151,18 @@ function hitObstacle() {
   const totalTricksDone=this.totalTricks;
 
   //final grade
-  const scorePct=Math.min(finalScore/500, 1)*40;
+  const scorePct=Math.min(finalScore/1500, 1)*40;
   const comboPct= Math.min(this.highestCombo/10,1)*25;
   const varietyPct= (this.trickCounts.kickflip> 0 && this.trickCounts.heelflip>0) ? 20:0;
   const grindPct=Math.min(this.longestGrind/200,1)*15;
   const total=scorePct+comboPct+varietyPct+grindPct;
 
   let grade;
-  if (total>=90) grade='S';
-  else if (total >=75) grade='A';
-  else if (total>=60) grade= 'B';
-  else if (total>=45) grade='C';
-  else if (total>= 30) grade='D';
+  if (total>=95) grade='S';
+  else if (total >=90) grade='A';
+  else if (total>=80) grade= 'B';
+  else if (total>=70) grade='C';
+  else if (total>= 60) grade='D';
   else grade='F';
   const gradeColors={'S':'#a914ff', 'A':'#44b1ff', 'B':'#3ea300', 'C': '#ffed22', 'D': '#ff6f00', 'F': '#ff0000'};
 
@@ -1183,7 +1183,7 @@ function hitObstacle() {
   const studentText=this.add.text(0,-cardH*0.36, 'STUDENT: '+ this.playerName, {
     fontSize:'14px',fill:'#aba7a7',fontFamily:'"Press Start 2P"'
   }).setOrigin(0.5);
-  const divider=this.add.rectangle(0,-cardH* 0.3, Math.min(W* 0.6,460),2,0x444444);
+  const divider=this.add.rectangle(0,-cardH* 0.3, Math.min(W* 0.6,460),4,0x444444);
 
   const stats=[{label:'SCORE',value:finalScore}, {label:'FAV TRICK', value:favTrick},
     {label: 'TOTAL TRICKS', value:totalTricksDone}, {label: 'HIGHEST COMBO', value:'x'+ this.highestCombo},
@@ -1196,7 +1196,7 @@ function hitObstacle() {
   const val=this.add.text(Math.min(W*0.28, 200),y, String(s.value),{fontSize:'15px',fill:'#ffffff',fontFamily:'"Press Start 2P"'}).setOrigin(1,0.5);
   statItems.push(lbl,val);
 });
-const divider2=this.add.rectangle(0,cardH* 0.28,Math.min(W*0.6, 460),2,0x444444);
+const divider2=this.add.rectangle(0,cardH* 0.28,Math.min(W*0.6, 460),4,0x444444);
 const gradeLabel= this.add.text(-Math.min(W*0.28,200),cardH*0.35, 'FINAL GRADE', {fontSize:'15px', fill:'#a8a5a5',fontFamily:'"Press Start 2P"'}).setOrigin(-.5,0.5);
 const gradeVal=this.add.text(-Math.min(W*0.29,167),cardH*0.35, grade, {fontSize:'48px', fill:gradeColors[grade],fontFamily:'"Press Start 2P"'}).setOrigin(1,0.5);
 card.add([cardBg,title, studentText,divider,divider2,gradeLabel, gradeVal, ...statItems]);
