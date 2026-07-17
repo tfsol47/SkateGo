@@ -345,6 +345,12 @@ class GameScene extends Phaser.Scene {
       frameWidth:42, frameHeight: 57
     });
 
+    this.load.audio('gradeS', 'S.mp3');
+    this.load.audio('gradeA','A.mp3');
+    this.load.audio('gradeB','B.mp3');
+    this.load.audio('gradeC','C.mp3');
+    this.load.audio('gradeD','D.mp3');
+    this.load.audio('gradeF','F.mp3');
   }
 
   create() {
@@ -695,12 +701,7 @@ class GameScene extends Phaser.Scene {
       this.cameras.main.shake(60, 0.003);
       this.dust.explode(20, this.skater.x, this.skater.y + 30);
       this.tweens.add({
-        targets: [this.player.container],
-        scaleY: 0.7,
-        scaleX: 1.3,
-        duration: 80,
-        yoyo: true,
-        ease: 'Quad.easeOut'
+        targets: [this.player.container],scaleY: 0.7,scaleX: 1.3,duration: 80,yoyo: true,ease: 'Quad.easeOut'
       });
     }
   }
@@ -1204,6 +1205,10 @@ card.add([cardBg,title, studentText,divider,divider2,gradeLabel, gradeVal, ...st
 //slide in
 this.tweens.add({
   targets:card, y:cardY+cardH/2, duration:600, ease:'Back.easeOut'
+});
+const finalGrade= grade;
+this.time.delayedCall(300,()=>{
+this.sound.play('grade' +grade,{volume:0.8});
 });
 
 //name input
