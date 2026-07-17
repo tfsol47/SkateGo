@@ -519,7 +519,7 @@ class GameScene extends Phaser.Scene {
 
     this.speedLines= this.add.particles(0,0,'speedline', {
       x:{min:0, max:W},y:{min:0, max:H},speedX:{min:-2000,max:-1500},
-      speedY:0, lifespan:200, quantity:0,scale:{start:1,end:0.5}, alpha:{start:0.4,end:0},
+      speedY:0, lifespan:300, quantity:0,scale:{start:1,end:0.5}, alpha:{start:0,end:0},
     }).setScrollFactor(0).setDepth(15);
 
     this.speedGlow=this.add.graphics().setScrollFactor(0).setDepth(16);
@@ -951,7 +951,7 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
     this.speedGlow.clear();
     const speedLevel=Math.floor(this.score/ 50) +1;
     if (speedLevel>=300) {
-      const glowAlpha=Math.min((speedLevel-8)*0.04, 0.35);
+      const glowAlpha=Math.min((speedLevel-8)*0.015, 0.35);
       this.speedGlow.fillStyle(0xff0000, glowAlpha);
       this.speedGlow.fillRect(0,0,W,60);
       this.speedGlow.fillRect(0,H-60,W,60);
