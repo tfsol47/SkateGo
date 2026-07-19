@@ -205,6 +205,15 @@ class MenuScene extends Phaser.Scene {
       fontSize:'10px', fill: '#cccccc', fontFamily: '"Press Start 2P"', align: 'left', lineSpacing: 8
     }).setOrigin(0.5, 0).setDepth(6);
 
+    const tutorialBtn=this.add.rectangle(cx, H*0.48, panelW*0.75, 50, 0x0a2e0a).setInteractive().setDepth(6);
+    this.add.text(cx,H*0.48,'HOW TO PLAY',{fontSize:'14px',fill:'#00ff00',fontFamily:'"Press Start 2P"'
+    }).setOrigin(0.5).setDepth(7);
+    tutorialBtn.on('pointerover',()=> tutorialBtn.setFillStyle(0x1a4e1a));
+    tutorialBtn.on('pointerout',()=>tutorialBtn.setFillStyle(0x0a2e0a));
+    tutorialBtn.on('pointerdown',()=>{this.cameras.main.fade(800,0,0,0);
+      this.time.delayedCall(800,()=>this.scene.start('TutorialScene'));
+    });
+
     const creditsBtn=this.add.rectangle(cx, H*0.54, panelW*0.75, 40, 0x111111).setInteractive().setDepth(6);
     this.add.text(cx, H*0.54, 'CREDITS', {
       fontSize:'12px', fill:'#a49b9b',fontFamily:'"Press Start 2P"'
@@ -262,6 +271,381 @@ async fetchLeaderboard() {
 this.lbText.setText(lines.join('\n'));
 }
 
+}
+
+//tutorial scene
+class TutorialScene extends Phaser.Scene {
+  constructor(){
+    super({key:'TutorialScene'});
+  }
+  preload(){
+    if (this.textures.exists('skater_cruise')) return;
+    this.load.image('bg1','bg1.png');
+    this.load.image('bg2','bg2.png');
+    this.load.image('bg3','bg3.png');
+    this.load.image('bg4','bg4.png');
+    this.load.image('bg5','bg5.png');
+    this.load.image('bench','bench.png');
+    this.load.image('cone','cone.png');
+    this.load.spritesheet('board_cruise','board_cruise.png',{frameWidth:30,frameHeight:7});
+    this.load.spritesheet('heelflip','heelflip.png',{frameWidth:30,frameHeight:10});
+    this.load.spritesheet('kickflip','kickflip.png',{frameWidth:30,frameHeight:10});
+    this.load.spritesheet('manual','manual.png',{frameWidth:30,frameHeight:13});
+    this.load.spritesheet('push','push.png',{frameWidth:48,frameHeight:61});
+    this.load.spritesheet('skater_cruise','cruise.png',{frameWidth:30,frameHeight:56});
+    this.load.spritesheet('ollie','ollie.png',{frameWidth:47,frameHeight:61});
+    this.load.spritesheet('manual_grind','manual_grind.png',{frameWidth:42,frameHeight:57});
+    this.load.audio('cruising','cruising.wav');
+    this.load.audio('whoosh','whoosh.mp3');
+    this.load.audio('grind','grind.ogg');
+  }
+  create(){
+    this.bgScale=H/324;
+    this.bg1=this.add.tileSprite(0,0,W/this.bgScale,324,'bg1').setOrigin(0,0).setScrollFactor(0).setDepth(0).setScale(this.bgScale);
+    this.bg2=this.add.tileSprite(0,0,W/this.bgScale,324,'bg2').setOrigin(0,0).setScrollFactor(0).setDepth(1).setScale(this.bgScale);
+    this.bg3=this.add.tileSprite(0,0,W/this.bgScale,324,'bg3').setOrigin(0,0).setScrollFactor(0).setDepth(2).setScale(this.bgScale);
+    this.bg4=this.add.tileSprite(0,0,W/this.bgScale,324,'bg4').setOrigin(0,0).setScrollFactor(0).setDepth(3).setScale(this.bgScale);
+    this.bg5=this.add.tileSprite(0,0,W/this.bgScale,324,'bg5').setOrigin(0,0).setScrollFactor(0).setDepth(4).setScale(this.bgScale);
+
+    //ground
+    const ground=this.physics.add.staticGroup();
+    for(let i=0;i< 500;i++) {
+      const tile= this.add.rectangle(i*200+ 100,GROUND_Y,200,8, 0x1a1a2e).setDepth(5);
+      ground.add(tile);
+    }
+    //player
+    this.player= new Player(this,100, SKATER_START_Y);
+    this.skater=this.player.body;
+    this.physics.add.collider(this.skater,ground);
+
+    //Anims
+    if (!this.anims.exists('cruise')) this.anims.create({key:'cruise',frames:this.anims.generateFrameNumbers('board_cruise',{start:0,end:6}),frameRate:12,repeat: -1});
+    if (!this.anims.exists('heelflip')) this.anims.create({key:'heelflip',frames:this.anims.generateFrameNumbers('heelflip',{start:0,end:8}),frameRate:18,repeat: 0});
+    if (!this.anims.exists('kickflip')) this.anims.create({key:'kickflip',frames:this.anims.generateFrameNumbers('kickflip',{start:0,end:8}),frameRate:18,repeat: 0});
+    if (!this.anims.exists('manual_start')) this.anims.create({key:'manual_start',frames:this.anims.generateFrameNumbers('manual',{start:0,end:3}),frameRate:12,repeat: 0});
+    if (!this.anims.exists('push')) this.anims.create({key:'push',frames:this.anims.generateFrameNumbers('push',{start:0,end:8}),frameRate:16,repeat: 0});
+    if (!this.anims.exists('skater_cruise')) this.anims.create({key:'skater_cruise',frames:this.anims.generateFrameNumbers('skater_cruise',{start:0,end:2}),frameRate:8,repeat: 0});
+    if (!this.anims.exists('ollie')) this.anims.create({key:'ollie',frames:this.anims.generateFrameNumbers('ollie',{start:0,end:8}),frameRate:18,repeat: 0});
+    if (!this.anims.exists('manual_grind')) this.anims.create({key:'manual_grind',frames:this.anims.generateFrameNumbers('manual_grind',{start:0,end:6}),frameRate:12,repeat: 0});
+
+    //cruising
+    this.cruisingSound= this.sound.add('cruising',{loop:true, volume:0.2});
+    this.cruisingSound.play();
+
+    //controls
+    this.cursors= this.input.keyboard.createCursorKeys();
+    this.kickflipKey=this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.K);
+    this.heelflipKey=this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.H);
+    this.manualKey=this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.M);
+
+    //obstacles
+    this.tutCone= this.add.image(900,GROUND_Y-38,'cone').setDepth(7).setScale(1.5);
+    this.physics.add.existing(this.tutCone,true);
+    this.tutCone.body.setSize(22, 40);
+    this.tutCone.body.setOffset(14,6);
+
+    this.tutRail=this.add.image(1800, GROUND_Y- 46,'bench').setDepth(7).setScale(2);
+    this.physics.add.existing(this.tutRail,true);
+    this.tutRail.body.setSize(128, 46);
+    this.tutRail.body.reset(1800,GROUND_Y -46);
+
+    //grinding setup
+    this.rails=this.physics.add.staticGroup();
+    this.rails.add(this.tutRail);
+    this.isGrinding =false;
+    this.grindCooldown=0;
+    this.grindScore=0;
+    this.currentRail=null;
+    this.physics.add.overlap(this.skater,this.rails, this.skaterGrind,null, this,);
+
+    //sparks
+    const sparkPx= this.make.graphics({x:0,y: 0, add:false});
+    sparkPx.fillStyle(0xffaa00);
+    sparkPx.fillRect(0,0,3,3);
+    sparkPx.generateTexture('spark',3,3,);
+    sparkPx.destroy();
+    this.sparks= this.add.particles(0,0, 'spark',{
+      speed:{min:50, max:150},angle:{min:200,max:340}, lifespan:300,quantity:0,scale: {start:1,end:0},alpha:{start:1,end:0}
+    }).setDepth(10);
+
+    //states
+    this.skateSpeed= 250;
+    this.onGround=false;
+    this.wasOnGround=true;
+    this.coyoteTime=100;
+    this.coyoteTimer=0;
+    this.isFlipping=false;
+    this.flipAngle=0;
+    this.isManual=false;
+    this.manualScore=0;
+    this.isPaused=false;
+    this.tutStep=0;
+    this.stepDone=false;
+    this.slowDone=false;
+
+    //prompt box
+    this.promptBg=this.add.rectangle(W/2, H*0.25, 600,70, 0x000000,0.8).setScrollFactor(0).setDepth(20).setVisible(false);
+    this.promptText= this.add.text(W/2, H*0.25, '',{fontSize:'14px',fill:'#fbf5f5',fontFamily:'"Press Start 2P"',align:'center'
+    }).setOrigin(0.5).setScrollFactor(0).setDepth(21).setVisible(false);
+
+    this.flashText=this.add.text(W/2, H*0.4,'', {fontSize:'20px',fill:'#06f506', fontFamily:'"Press Start 2P"'
+    }).setOrigin(0.5).setScrollFactor(0).setDepth(21);
+
+    //camera
+    this.cameras.main.startFollow(this.player.body,true,0.1, 0.1);
+    this.cameras.main.setFollowOffset(-W*0.18, 0);
+    this.cameras.main.fadeIn(800,0,0,0);
+
+    //welcome message
+    this.showPrompt('WELCOME TO SKATE GO\n GET READY',2000,()=>{this.tutStep=1;});
+  }
+  showPrompt(text,duration, onDone){
+    this.isPaused=true;
+    this.promptText.setText(text).setVisible(true);
+    if (duration) {this.time.delayedCall(duration,()=> {
+      this.promptBg.setVisible(false);
+      this.promptText.setVisible(false);
+      this.isPaused=false;
+      if (onDone) onDone();
+    });}
+  }
+  waitForInput(text,onDone){this.isPaused=true;
+    this.promptBg.setVisible(true);
+    this.promptText.setText(text).setVisible(true);
+    this.stepDone=false;
+    this._waitCallback=onDone;
+  }
+  completeStep() {
+    if (this.stepDone) return;
+    this.stepDone=true;
+    this.promptBg.setVisible(false);
+    this.promptText.setVisible(false);
+    this.isPaused=false;
+    if (this._waitCallback) this._waitCallback();
+    }
+    flash(text,color) {this.flashText.setText(text).setStyle({fill:color||'#00ff00'});
+    this.tweens.add({targets:this.flashText,alpha:0,duration: 400,delay:600, onComplete:()=> this.flashText.setAlpha(1).setText('')
+    });
+  }
+  skaterGrind(skaterObj,rail){
+    if (this.isGrinding) return;
+    if (this.grindCooldown>0) return;
+    if(this.skater.body.velocity.y<=0) return;
+    if (this.skater.y>rail.y) return;
+    if(this.grindSound) this.grindSound.stop();
+    this.grindSound= this.sound.add('grind',{loop:true,volume: 0.3});
+    this.grindSound.play();
+    this.isGrinding=true;
+    this.currentRail=rail;
+    this.skater.body.setVelocityY(0);
+    this.skater.body.setAllowGravity(false);
+    this.skater.y=rail.y-(rail.height*rail.scaleY/2)-30;
+  }
+  update(time,delta){
+    this.bg1.tilePositionX= this.skater.x*0.02/ this.bgScale;
+    this.bg2.tilePositionX=this.skater.x*0.05/this.bgScale;
+    this.bg3.tilePositionX= this.skater.x*0.01/this.bgScale;
+    this.bg4.tilePositionX =this.skater.x*0.35/this.bgScale;
+    const body = this.skater.body;
+    console.log('tutStep',this.tutStep,this.skater.x);
+    this.onGround=body.blocked.down;
+
+    if(this.onGround){
+      this.coyoteTimer= this.coyoteTime;
+    }else{
+      this.coyoteTimer-=delta;
+    }
+    if(this.isPaused){
+      body.setVelocityX(0);
+      //jump during prompts
+      if ((Phaser.Input.Keyboard.JustDown(this.cursors.up)|| Phaser.Input.Keyboard.JustDown(this.cursors.space))&&this.coyoteTimer>0){
+        body.setVelocityY(-750);
+        this.coyoteTimer=0;
+        this.completeStep();
+      }
+      if(body.velocity.y <0&&! (this.cursors.up.isDown|| this.cursors.space.isDown)){
+        body.setVelocityY(body.velocity.y*0.6);
+      }
+      if (body.velocity.y> 0){body.setVelocityY(body.velocity.y*1.04);}
+      if (this.manualKey.isDown&& this.onGround&&this.tutStep===10){this.isManual=true;
+        this.completeStep();
+      }
+      if(this.manualKey.isDown&& this.onGround){
+        this.isManual=true;
+        this.completeStep();
+      }
+      if(this.cursors.down.isDown&&this.onGround){this.completeStep();}
+      this.player.update(this.cursors, false,0,body.velocity.y, null,false,false, this.onGround);
+      return;
+    }
+    //grinding
+    if(this.isGrinding){this.skater.y=this.currentRail.y- (this.currentRail.height*this.currentRail.scaleY/2)-30;
+      this.grindScore+=1;
+      this.sparks.emitParticleAt(this.skater.x+20, this.skater.y+30, 10);
+      this.sparks.emitParticleAt(this.skater.x-20, this.skater.y+30, 10);
+    }
+    if(this.currentRail && this.skater.x>this.currentRail.x+100){this.isGrinding=false;
+      this.currentRail=null;
+      this.skater.body.setAllowGravity(true);
+      if (this.grindSound) this.grindSound.stop();
+    }
+    body.setVelocityX(this.skateSpeed);
+
+    //jump
+    if ((Phaser.Input.Keyboard.JustDown(this.cursors.up)|| Phaser.Input.Keyboard.JustDown(this.cursors.space))&& this.coyoteTimer>0){
+      body.setVelocityY(-750);
+      this.coyoteTimer=0;
+      if(this.isGrinding) {
+        this.isGrinding=false;
+        this.currentRail=null;
+        this.skater.body.setAllowGravity(true);
+        if (this.grindSound) this.grindSound.stop();
+      }
+    }
+    if (body.velocity.y<0&&! (this.cursors.up.isDown|| this.cursors.space.isDown)){
+      body.setVelocityY(body.velocity.y*0.6);
+    }
+    if(body.velocity.y>0&&!this.isGrinding){
+      body.setVelocityY(body.velocity.y*1.04);
+    }
+
+    //flip
+    if(!this.onGround&&!this.isFlipping){if(this.kickflipKey.isDown){
+      this.isFlipping= true;
+      this.sound.play('whoosh',{volume:0.5});
+      this.flipAngle=0;
+      this.currentTrick='kickflip';
+      this.player.olliePlayed=false;
+    } else if(this.heelflipKey.isDown){
+      this.isFlipping=true;
+      this.sound.play('whoosh',{volume:0.5});
+      this.flipAngle=0;
+      this.currentTrick='heelflip';
+      this.player.olliePlayed=false;
+    }
+  }
+
+  if(this.isFlipping){
+    this.flipAngle+=1.1* delta;
+    const displayAngle=this.currentTrick==='heelflip'?-this.flipAngle: this.flipAngle;
+    this.player.update(this.cursors,true, displayAngle,body.velocity.y, this.currentTrick,false, this.isGrinding, this.onGround);
+    if (this.flipAngle>= 360){
+      this.isFlipping=false;
+      this.flipAngle=0;
+      this.player.resetBoardAngle();
+    }
+  } else{
+    this.player.update(this.cursors,false,0, body.velocity.y,null,this.isManual, this.isGrinding, this.onGround,);
+  }
+  //manual
+  if (Phaser.Input.Keyboard.JustDown(this.manualKey)&& this.onGround &&this.tutStep!==11){
+    this.isManual=true;
+  }
+  if (!this.manualKey.isDown|| !this.onGround){this.isManual=false;}
+
+  //slowdown
+  if(this.cursors.down.isDown&& this.onGround){this.skateSpeed= Math.max(80, this.skateSpeed*0.985);
+  }else{
+    this.skateSpeed=250;
+  }
+
+  //tutorial steps: step1, wait for jump
+  if (this.tutStep===1 &&this.skater.x>750){
+    this.tutStep=2;
+    this.waitForInput('JUMP OVER THE CONE\n HOLD SPACE OR UP ARROW',()=>{
+      this.tutStep=3;
+    });
+  }
+  //step 2, detect jump
+  if(this.tutStep===3&&!this.onGround&& !this.stepDone){
+    this.completeStep();
+  }
+
+  //step 3, landed jump
+  if(this.tutStep===3 && this.wasOnGround===false&& this.onGround){this.flash('PERFECT', '#25f125')
+    this.tutStep=4;
+  this.time.delayedCall(800,()=>{
+    this.waitForInput('NOW TRICK MIDAIR\nK FOR KICKFLIP\n H FOR HEELFLIP',() =>{
+      this.tutStep=5;
+    });
+  });
+  }
+  //step 4, wait for flip
+  if(this.tutStep===5 && this.isFlipping && !this.stepDone){this.completeStep();}
+
+  //step 5, landed trick
+  if (this.tutStep===5&& this.wasOnGround===false&&this.onGround&&!this.isFlipping){
+    this.flash('BEAUTIFUL LANDING', '#37ff00');
+    this.tutStep=6;
+    this.time.delayedCall(800,()=> {
+      this.waitForInput('JUMP ON BENCH TO GRIND',()=>{
+        this.tutStep=7;
+      });
+    });
+  }
+  //step 6, detect grind
+  if (this.tutStep===7&&this.isGrinding){
+    this.completeStep();
+    this.flash('GRINDING','#ffaa00');
+    this.time.delayedCall(1500,()=>{
+    this.stepDone=false;
+    this.tutStep=8;});
+  }
+
+  //step 7, manual prompt after grind
+  if (this.tutStep===8&&!this.isGrinding&& this.onGround){this.tutStep=9;
+    this.isPaused=true;
+    this.promptBg.setVisible(true);
+    this.promptText.setText('HOLD M FOR MANUAL').setVisible(true);
+    this.time.delayedCall(1500,()=>{
+      this.isPaused=false;
+      this.tutStep=10;
+    });
+  }
+  //step8 detect manual
+  if (this.tutStep===10){
+    if (this.manualKey.isDown&&this.onGround){
+      this.isManual= true;
+      this.promptBg.setVisible(false);
+      this.promptText.setVisible(false);
+      this.isPaused=false;
+      this.flash('MANUAL','#ff6600');
+      this.time.delayedCall(1000,()=>{
+      this.tutStep=11;
+      });
+    }
+  }
+  //step 9 slow down
+  if (this.tutStep===11){this.tutStep=12;
+    this.isPaused=true;
+    this.promptBg.setVisible(true);
+    this.promptText.setText('HOLD DOWN ARROW TO SLOW DOWN').setVisible(true);
+    this.time.delayedCall(500,()=>{
+      this.isPaused=false;
+      this.tutStep=13;
+    });
+  }
+  //step 10 detect slow down
+  if (this.tutStep=== 13){
+    if (this.cursors.down.isDown&&this.onGround){
+    this.promptBg.setVisible(false);
+    this.promptText.setVisible(false);
+    this.isPaused=false;
+    this.flash('NICE','#00ffff');
+    this.tutStep=14;
+  }
+}
+  //step 11 final
+  if(this.tutStep===14&&this.skater.x> 3200){
+    this.tutStep=99;
+    this.showPrompt("YOU LOOK READY\nTIME TO SKATE",2000, ()=>{
+      this.cruisingSound.stop();
+      this.cameras.main.fade(800,0,0,0);
+      this.time.delayedCall(800,()=>this.scene.start('GameScene',{theme:'night'}));
+    });
+  }
+  this.wasOnGround= this.onGround;
+  }
 }
 
 //GAME SCENE
@@ -1295,7 +1679,7 @@ const config = {
     default: 'arcade',
     arcade: { gravity: { y: 1500 }, debug: false, fixedStep:false}
   },
-  scene: [MenuScene, GameScene]
+  scene: [MenuScene,TutorialScene, GameScene]
 };
 
 function isTouchDevice() {
