@@ -197,13 +197,33 @@ class MenuScene extends Phaser.Scene {
     });
 
     //leaderboard
-    this.add.text(cx, H*0.62, 'TOP 10', {
-      fontSize:'13px', fill: '#ffff2a', fontFamily:'"Press Start 2P"'
-    }).setOrigin(0.5).setDepth(6);
+    this.lbModes=['NORMAL','CHALLENGE','SCORE ATTACK'];
+    this.lbTables=['scores','challenge_scores','scoreattack_scores'];
+    this.lbIndex=0;
 
-    this.lbText=this.add.text(cx, H*0.69, 'loading..', {
-      fontSize:'10px', fill: '#cccccc', fontFamily: '"Press Start 2P"', align: 'left', lineSpacing: 8
-    }).setOrigin(0.5, 0).setDepth(6);
+    const leftArrow= this.add.text(cx-120, H*0.62,'<',{fontSize:'13px',fill:'#ffffff',fontFamily:'"Press Start 2P"'}).setOrigin(0.5).setDepth(6).setInteractive();
+    this.lbTitle=this.add.text(cx,H*0.62,'TOP 10',{fontSize:'11px',fill:'#ffff2a',fontFamily:'"Press Start 2P"'}).setOrigin(0.5).setDepth(6);
+    const rightArrow=this.add.text(cx+120, H*0.62,'>',{fontSize:'13px',fill:'#ffffff',fontFamily:'"Press Start 2P"'}).setOrigin(0.5).setDepth(6).setInteractive();
+    this.lbText =this.add.text(cx,H*0.74,'loading..',{fontSize:'10px',fill:'#c7c2c2',fontFamily:'"Press Start 2P"',align:'left',lineSpacing:8}).setOrigin(0.5).setDepth(6);
+
+    leftArrow.on('pointerover',()=>leftArrow.setStyle({fill:'#ffff26'}));
+    leftArrow.on('pointerout',()=>leftArrow.setStyle({fill:'#ffffff'}));
+    rightArrow.on('pointerout',()=>rightArrow.setStyle({fill:'#ffff26'}));
+    rightArrow.on('pointerout',()=>rightArrow.setStyle({fill:'#ffffff'}));
+
+    leftArrow.on('pointerdown',()=>{
+      this.lbIndex=(this.lbIndex-1 +this.lbModes.length)%this.lbModes.length;
+      this.lbTitle.setText('TOP 10- '+this.lbModes[this.lbIndex]);
+      this.lbText.setText('loading..');
+      this.fetchLeaderboard(this.lbTables[this.lbIndex]);
+    });
+
+    rightArrow.on('pointerdown',()=>{
+      this.lbIndex=(this.lbIndex+1)%this.lbModes.length;
+      this.lbTitle.setText('TOP 10- '+this.lbModes[this.lbIndex]);
+      this.lbText.setText('loading..');
+      this.fetchLeaderboard(this.lbTables[this.lbIndex]);
+    });
 
     const modesBtn= this.add.rectangle(cx, H*0.42,panelW*0.75, 50,0x1a0a2e).setInteractive().setDepth(6);
     this.add.text(cx,H*0.42, 'MODES',{fontSize:'14px',fill:'#ac09fd',fontFamily:'"Press Start 2P"'
@@ -263,9 +283,9 @@ preload() {
 
 }
 
-async fetchLeaderboard() {
+async fetchLeaderboard(table='scores') {
   const {data,error}=await db
-  .from('scores').select('name,score').order('score',{ascending: false}).limit(10);
+  .from(table).select('name,score').order('score',{ascending: false}).limit(10);
 
   if(error || !data) {
     this.lbText.setText('failed to load');
