@@ -177,8 +177,8 @@ class MenuScene extends Phaser.Scene {
     }).setOrigin(0.5).setDepth(7);
 
     //sunset suburb
-    const sunsetBtn = this.add.rectangle(cx, H* 0.42, panelW * 0.75, 50, 0x2d1b00).setInteractive().setDepth(6);
-    this.add.text(cx, H* 0.42, 'SUNSET SUBURB', {
+    const sunsetBtn = this.add.rectangle(cx, H* 0.36, panelW * 0.75, 50, 0x2d1b00).setInteractive().setDepth(6);
+    this.add.text(cx, H* 0.36, 'SUNSET SUBURB', {
       fontSize: '14px', fill: '#f86300', fontFamily: '"Press Start 2P"'
     }).setOrigin(0.5).setDepth(7);
 
@@ -205,6 +205,16 @@ class MenuScene extends Phaser.Scene {
       fontSize:'10px', fill: '#cccccc', fontFamily: '"Press Start 2P"', align: 'left', lineSpacing: 8
     }).setOrigin(0.5, 0).setDepth(6);
 
+    const modesBtn= this.add.rectangle(cx, H*0.42,panelW*0.75, 50,0x1a0a2e).setInteractive().setDepth(6);
+    this.add.text(cx,H*0.42, 'MODES',{fontSize:'14px',fill:'#ac09fd',fontFamily:'"Press Start 2P"'
+    }).setOrigin(0.5).setDepth(7);
+
+    modesBtn.on('pointerover',()=>modesBtn.setFillStyle(0x2a1a4e));
+    modesBtn.on('pointerout',()=>modesBtn.setFillStyle(0x1a0a2e));
+    modesBtn.on('pointerdown',()=>{this.cameras.main.fade(800,0,0,0);
+      this.time.delayedCall(800,()=>this.scene.start('ModesScene'));
+    });
+    
     const tutorialBtn=this.add.rectangle(cx, H*0.48, panelW*0.75, 50, 0x0a2e0a).setInteractive().setDepth(6);
     this.add.text(cx,H*0.48,'HOW TO PLAY',{fontSize:'14px',fill:'#00ff00',fontFamily:'"Press Start 2P"'
     }).setOrigin(0.5).setDepth(7);
@@ -214,8 +224,8 @@ class MenuScene extends Phaser.Scene {
       this.time.delayedCall(800,()=>this.scene.start('TutorialScene'));
     });
 
-    const creditsBtn=this.add.rectangle(cx, H*0.54, panelW*0.75, 40, 0x111111).setInteractive().setDepth(6);
-    this.add.text(cx, H*0.54, 'CREDITS', {
+    const creditsBtn=this.add.rectangle(cx, H*0.535, panelW*0.75, 40, 0x111111).setInteractive().setDepth(6);
+    this.add.text(cx, H*0.535, 'CREDITS', {
       fontSize:'12px', fill:'#a49b9b',fontFamily:'"Press Start 2P"'
     }).setOrigin(0.5).setDepth(7);
 
@@ -648,6 +658,89 @@ class TutorialScene extends Phaser.Scene {
   }
 }
 
+
+//MODESSCENE
+class ModesScene extends Phaser.Scene{
+  constructor(){super({key:'ModesScene'});
+  }
+  preload(){
+    this.load.image('bg1','bg1.png');
+    this.load.image('bg2','bg2.png');
+    this.load.image('bg3','bg3.png');
+    this.load.image('bg4','bg4.png');
+    this.load.image('bg5','bg5.png');
+  }
+  create(){this.bgScale=H/324;
+    this.add.tileSprite(0,0,W/this.bgScale,324,'bg1').setOrigin(0,0).setDepth(0).setScale(this.bgScale);
+    this.add.tileSprite(0,0,W/this.bgScale,324,'bg2').setOrigin(0,0).setDepth(1).setScale(this.bgScale);
+    this.add.tileSprite(0,0,W/this.bgScale,324,'bg3').setOrigin(0,0).setDepth(2).setScale(this.bgScale);
+    this.add.tileSprite(0,0,W/this.bgScale,324,'bg4').setOrigin(0,0).setDepth(3).setScale(this.bgScale);
+    this.add.tileSprite(0,0,W/this.bgScale,324,'bg5').setOrigin(0,0).setDepth(4).setScale(this.bgScale);
+    
+    this.add.rectangle(0,0,W,H, 0x000000,0.25).setOrigin(0,0).setDepth(5);
+    this.add.text(W/2, H*0.15,'SELECT MODE',{fontSize:'24px',fill:'#ffffff',fontFamily:'"Press Start 2P"'}).setOrigin(0.5).setDepth(6);
+
+    //challenge mode btn
+    const chalBtn= this.add.rectangle(W/2, H*0.38, 500,120,0x1a0a0a).setInteractive().setDepth(6);
+    this.add.text(W/2, H*0.35,'CHALLENGE',{fontSize:'18px',fill:'#ff4444',fontFamily:'"Press Start 2P"'}).setOrigin(0.5).setDepth(7);
+    this.add.text(W/2,H*0.42,'survive as long as possible',{fontSize:'9px',fill:'#aaa9a9',fontFamily:'"Press Start 2P"'}).setOrigin(0.5).setDepth(7);
+
+    chalBtn.on('pointerover',()=>chalBtn.setFillStyle(0x2a1a1a));
+    chalBtn.on('pointerout',()=> chalBtn.setFillStyle(0x1a0a0a));
+    chalBtn.on('pointerdown',()=>{this.selectedMode='challenge';
+      this.showThemePicker();
+    });
+
+    //score attack btn
+    const saBtn=this.add.rectangle(W/2,H*0.62,500,120,0x0a1a0a).setInteractive().setDepth(6);
+    this.add.text(W/2,H*0.59,'SCORE ATTACK',{fontSize:'18px',fill:'#12ff90',fontFamily:'"Press Start 2P"',}).setOrigin(0.5).setDepth(7);
+    this.add.text(W/2,H*0.66, 'score as much as possible in 60s',{fontSize:'9px',fill:'#a7a7a7',fontFamily:'"Press Start 2P"'}).setOrigin(0.5).setDepth(7);
+
+    saBtn.on('pointerover',()=>saBtn.setFillStyle(0x1a2a1a));
+    saBtn.on('pointerout',()=> saBtn.setFillStyle(0x0a1a0a));
+    saBtn.on('pointerdown',()=>{this.selectedMode='scoreattack';
+      this.showThemePicker();
+    });
+
+    //back
+    const backBtn= this.add.text(W/2,H*0.88, '< BACK',{fontSize:'12px',fill:'#949494',fontFamily:'"Press Start 2P"'}).setOrigin(0.5).setDepth(6).setInteractive();
+    backBtn.on('pointerover',()=>backBtn.setStyle({fill:'#ffffff'}));
+    backBtn.on('pointerout',()=>backBtn.setStyle({fill:'#a5a4a4'}));
+    backBtn.on('pointerdown',()=>{this.cameras.main.fade(800,0,0,0);
+      this.time.delayedCall(800,()=>this.scene.start('MenuScene'));
+    });
+    //theme pick
+    this.themePicker= this.add.container(W/2,H/2).setDepth(20).setVisible(false);
+    const pickerBg= this.add.rectangle(0,0,520,280,0x111111).setStrokeStyle(2,0xffffff)
+    const pickerTitle= this.add.text(0,-100,'CHOOSE YOUR CITY',{fontSize:'14px',fill:'#ffffff',fontFamily:'"Press Start 2P"'}).setOrigin(0.5);
+
+    const nightPick=this.add.rectangle(-120,0,200,80,0x1a1a2e).setInteractive();
+    const nightTxt=this.add.text(-120,0,'NIGHT CITY',{fontSize:'12px',fill:'#00ffff',fontFamily:'"Press Start 2P"'}).setOrigin(0.5);
+
+    const sunsetPick= this.add.rectangle(120,0,200,80,0x1a1a2e).setInteractive();
+    const sunsetTxt=this.add.text(120,0,'SUNSET\nSUBURB',{fontSize:'12px',fill:'#f86300',fontFamily:'"Press Start 2P"',align:'center'}).setOrigin(0.5);
+    
+    const cancelTxt=this.add.text(0,110,'CANCEL',{fontSize:'10px',fill:'#a5a0a0',fontFamily:'"Press Start 2P"'}).setOrigin(0.5).setInteractive();
+    nightPick.on('pointerover',()=>nightPick.setFillStyle(0x2a2a4e));
+    nightPick.on('pointerout',()=>nightPick.setFillStyle(0x1a1a2e));
+    sunsetPick.on('pointerover',()=>sunsetPick.setFillStyle(0x4d3b00));
+    sunsetPick.on('pointerout',()=>sunsetPick.setFillStyle(0x2d1b00));
+    nightPick.on('pointerdown',()=>this.startMode('night'));
+    sunsetPick.on('pointerdown',()=>this.startMode('sunset'));
+    cancelTxt.on('pointerdown',()=>this.themePicker.setVisible(false));
+
+    this.themePicker.add([pickerBg,pickerTitle,nightPick, nightTxt,sunsetPick,sunsetTxt,cancelTxt]);
+    this.cameras.main.fadeIn(800,0,0,0);
+  }
+  showThemePicker(){
+    this.themePicker.setVisible(true);
+  }
+  startMode(theme){this.cameras.main.fade(800,0,0,0);
+    this.time.delayedCall(800,()=>{
+      this.scene.start('GameScene',{theme,mode:this.selectedMode});
+    });
+  }
+}
 //GAME SCENE
 class GameScene extends Phaser.Scene {
   constructor() {
@@ -655,7 +748,8 @@ class GameScene extends Phaser.Scene {
   
   }
   init(data) {
-   this.theme = data.theme || 'night'; 
+   this.theme= data.theme || 'night'; 
+   this.mode=data.mode||'normal';
   }
 
   preload() {
@@ -982,7 +1076,14 @@ class GameScene extends Phaser.Scene {
     }).setDepth(25).setScrollFactor(0).setOrigin(0.5);
     this.comboBarBg=this.add.rectangle(W/2, H*0.12, 200, 8, 0x333333).setScrollFactor(0).setDepth(25).setVisible(false);
     this.comboBar=this.add.rectangle(W/2-100, H*0.12, 200, 8,0xff6600).setScrollFactor(0).setDepth(26).setOrigin(0,0.5).setVisible(false);
-    this.score = 0;
+    this.score= 0;
+    this.survivalTime=0;
+    this.scoreAttackTimer=60000;
+    this.timerText=null;
+
+    if (this.mode==='scoreattack'){this.timerText=this.add.text(W/2, 16,'TIME:60',{fontSize:'16px',fill:'#00ff88',fontFamily:'"Press Start 2P"'}).setScrollFactor(0).setDepth(20).setOrigin(0.5,0);}
+    if (this.mode==='challenge'){this.timerText= this.add.text(W/2,16,'SURVIVAL:0s',{fontSize:'16px',fill:'#ff4444',fontFamily:'"Press Start 2P"'}).setScrollFactor(0).setDepth(20).setOrigin(0.5,0);
+    this.obstacleInterval= Phaser.Math.Between(500,900);}
     this.scoreText = this.add.text(16, 16, 'SCORE: 0', {
       fontSize: '16px', fill: '#ffffff', fontFamily: '"Press Start 2P"'
     }).setScrollFactor(0).setDepth(20);
@@ -1319,7 +1420,11 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
       obs.body.setSize(22,40);
       obs.body.setOffset(14,6);
       this.obstacles.add(obs);
-      this.nextObstacleX += Phaser.Math.Between(700, 1100);
+      if (this.mode==='challenge'){
+        const secs=Math.floor(this.survivalTime/1000);
+        this.nextObstacleX+=Math.max(200,Phaser.Math.Between(700,1100)-(secs*10));
+      } else{
+      this.nextObstacleX += Phaser.Math.Between(700, 1100);}
       if (Math.abs(this.nextObstacleX -this.nextRailX) <300) {
         this.nextObstacleX=this.nextRailX+400;
       }
@@ -1356,6 +1461,21 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
       this.speedGlow.fillRect(W-60,0,60,H);
     }
 
+    if (this.mode==='scoreattack'){this.scoreAttackTimer-=delta;
+      const secsLeft=Math.ceil(this.scoreAttackTimer/1000);
+      if (this.timerText) this.timerText.setText('TIME: '+secsLeft);
+      if (secsLeft<=10) this.timerText.setStyle({fill:'#ff0000'});
+      if (this.scoreAttackTimer<=0){this.scoreAttackTimer=0;
+        this.alive=false;
+        hitObstacle.call(this);
+        return;
+      }
+    }
+    if (this.mode==='challenge'){this.survivalTime+=delta;
+      const secs=Math.floor(this.survivalTime/1000);
+      if (this.timerText) this.timerText.setText('SURVIVAL: '+secs+'s');
+      this.obstacleInterval= Math.max(200, (Phaser.Math.Between(500,900))-(secs*8));
+    }
     this.score += 1;
     this.scoreText.setText('SCORE: ' + Math.floor(this.score / 10));
     this.speedText.setText('SPEED: ' + (Math.floor(this.score / 50) + 1));
@@ -1436,14 +1556,7 @@ showTrickText(text, points) {
     fontSize: '14px', fill: '#ffff00', fontFamily: '"Press Start 2P"'
   }).setDepth(25).setScrollFactor(0).setOrigin(0.5);
 
-  this.tweens.add({
-    targets:tx,
-    y: H*0.25,
-    alpha:0,
-    duration: 500,
-    delay:800,
-    ease: 'Quad.easeOut',
-    onComplete: ()=> {
+  this.tweens.add({targets:tx,y: H*0.25,alpha:0,duration: 500,delay:800,ease: 'Quad.easeOut',onComplete: ()=> {
       this.activeTrickTexts-=1;
       tx.destroy();
       }
@@ -1528,8 +1641,15 @@ function hitObstacle() {
   this.comboMultiplier=1;
 
   const finalScore=Math.floor(this.score/10);
+  const survivalSecs= Math.floor(this.survivalTime/1000);
+
+  if(this.mode==='challenge'){if(survivalSecs>parseInt(localStorage.getItem('challengeBest')||0)){
+    localStorage.setItem('challengeBest',survivalSecs);
+  }} else if(this.mode==='scoreattack'){if (finalScore>parseInt(localStorage.getItem('scoreAttackBest')||0)){
+    localStorage.setItem('scoreAttackBest',finalScore);
+  }} else{
   if (finalScore>this.highScore) this.highScore=finalScore;
-  localStorage.setItem('highScore', this.highScore);
+  localStorage.setItem('highScore', this.highScore);}
 
   //figure out fav trick
   const favTrick=this.trickCounts.kickflip >=this.trickCounts.heelflip ? 'KICKFLIP' :'HEELFLIP';
@@ -1570,7 +1690,12 @@ function hitObstacle() {
   }).setOrigin(0.5);
   const divider=this.add.rectangle(0,-cardH* 0.3, Math.min(W* 0.6,460),4,0x444444);
 
-  const stats=[{label:'SCORE',value:finalScore}, {label:'FAV TRICK', value:favTrick},
+  const stats=this.mode==='challenge'?[{label:'SURVIVAL TIME',value:survivalSecs+'s'}, {label:'FAV TRICK',value:favTrick},
+    {label:'TOTAL TRICKS',value:totalTricksDone},{label:'HIGHEST COMBO',value:'x'+this.highestCombo},
+    {label:'LONGEST GRIND',value:Math.floor(this.longestGrind)},{label:'TOTAL GRINDS',value:this.totalGrinds},
+  ]
+  
+  :[{label:'SCORE',value:finalScore}, {label:'FAV TRICK', value:favTrick},
     {label: 'TOTAL TRICKS', value:totalTricksDone}, {label: 'HIGHEST COMBO', value:'x'+ this.highestCombo},
     {label:'LONGEST GRIND',value:Math.floor(this.longestGrind)}, {label:'TOTAL GRINDS',value:this.totalGrinds},
   ];
@@ -1619,7 +1744,11 @@ async function submitScore() {
     return;
   }
   wrap.style.display='none';
-  const {error}= await db.from('scores').insert({name,score:finalScore});
+  let table='scores';
+  let submitScore=finalScore;
+  if (scene.mode==='challenge'){table='challenge_scores';submitScore=survivalSecs;}
+  if (scene.mode==='scoreattack'){table='scoreattack_scores';}
+  const {error}= await db.from(table).insert({name,score:finalScore});
   if (error) {scene.add.text(W/2, H*0.91, 'failed to submit :(', {fontSize:'10px',fill:'#ed0909',fontFamily:'"Press Start 2P"'
   }).setOrigin(0.5).setScrollFactor(0).setDepth(31);
   }else {
@@ -1679,7 +1808,7 @@ const config = {
     default: 'arcade',
     arcade: { gravity: { y: 1500 }, debug: false, fixedStep:false}
   },
-  scene: [MenuScene,TutorialScene, GameScene]
+  scene: [MenuScene,TutorialScene,ModesScene, GameScene]
 };
 
 function isTouchDevice() {
