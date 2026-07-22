@@ -407,6 +407,9 @@ class TutorialScene extends Phaser.Scene {
     this.isFlipping=false;
     this.flipAngle=0;
     this.isManual=false;
+    this.isSliding=false;
+    this.slideTimer=0;
+    this.slideKey=this.cursors.down;
     this.manualScore=0;
     this.isPaused=false;
     this.tutStep=0;
@@ -477,7 +480,6 @@ class TutorialScene extends Phaser.Scene {
     this.bg3.tilePositionX= this.skater.x*0.01/this.bgScale;
     this.bg4.tilePositionX =this.skater.x*0.35/this.bgScale;
     const body = this.skater.body;
-    console.log('tutStep',this.tutStep,this.skater.x);
     this.onGround=body.blocked.down;
 
     if(this.onGround){
@@ -1026,13 +1028,17 @@ class GameScene extends Phaser.Scene {
       speedY:0, lifespan:300, quantity:0,scale:{start:1,end:0.5}, alpha:{start:0,end:0},
     }).setScrollFactor(0).setDepth(15);
 
-    this.speedGlow=this.add.graphics().setScrollFactor(0).setDepth(16);
-
     this.physics.add.collider(this.skater, ground);
 
     //Obstacles
     this.obstacles = this.physics.add.staticGroup();
-    this.physics.add.collider(this.skater, this.obstacles, hitObstacle, null, this);
+    this.physics.add.collider(this.skater, this.obstacles,(skater,obs)=>{
+      if (this.isSliding&&this.mode==='challenge'){
+        this.dust.explode(15,obs.x, obs.y);
+        obs.destroy();
+      } else{ hitObstacle.call(this);
+       }
+       }, null, this);
     this.nextObstacleX = 700;
     this.alive = true;
     this.obstacleColor = C.obstacle;
@@ -1239,7 +1245,7 @@ class GameScene extends Phaser.Scene {
     }
 
     //mobile mapping
-    const baseSpeed = Math.min(250 + Math.floor(this.score / 100) * 15, 1000);
+    const baseSpeed= Math.min(250+Math.floor(this.score/100)*15,1000);
     if (this.mobileJump) {
       this.mobileJump=false;
       if (this.onGround || this.coyoteTimer>0 || this.isGrinding) {
@@ -1292,18 +1298,33 @@ class GameScene extends Phaser.Scene {
    if(this.recoveryActive){
       this.skateSpeed=30;
     } else if (this.cursors.down.isDown && this.onGround) {
+      this.skateSpeed = Math.max(80, (this.skateSpeed || baseSpeed) * 0.985);
+    } else {
+  this.skateSpeed = baseSpeed;
+}
       if (this.cursors.down.isDown && this.onGround && this.combo>0) {
         this.combo=0;
         this.comboMultiplier=1;
         this.lastTrick=null;
         this.comboText.setText('');
       }
-  this.skateSpeed = Math.max(80, (this.skateSpeed || baseSpeed) * 0.985);
-} else {
-  this.skateSpeed = baseSpeed;
-}
 
-body.setVelocityX(this.skateSpeed);
+      if (this.mode==='challenge'&& Phaser.Input.Keyboard.JustDown(this.cursors.down)&&this.onGround && !this.isSliding){
+        this.isSliding=true;
+        this.slideTimer=800;
+        this.skater.body.setSize(40,30);
+        this.skater.body.setOffset(0,30);
+        this.player.container.y+=15;
+      }
+
+      if (this.isSliding){this.slideTimer-=delta;
+        if(this.slideTimer<=0){
+          this.isSliding=false;
+          this.skater.body.setSize(40,60);
+          this.skater.body.setOffset(0,0);
+          this.player.container.y-=15;
+        }
+      }
 
     // Jump only once when the key is first pressed
 if (
@@ -1468,17 +1489,6 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
         this.nextObstacleX=this.nextRailX+400;
       }
 
-    }
-
-    this.speedGlow.clear();
-    const speedLevel=Math.floor(this.score/ 50) +1;
-    if (speedLevel>=300) {
-      const glowAlpha=Math.min((speedLevel-8)*0.015, 0.35);
-      this.speedGlow.fillStyle(0xff0000, glowAlpha);
-      this.speedGlow.fillRect(0,0,W,60);
-      this.speedGlow.fillRect(0,H-60,W,60);
-      this.speedGlow.fillRect(0,0,60,H);
-      this.speedGlow.fillRect(W-60,0,60,H);
     }
 
     if (this.mode==='scoreattack'){this.scoreAttackTimer-=delta;
@@ -1662,7 +1672,6 @@ function hitObstacle() {
 
   const finalScore=Math.floor(this.score/10);
   const survivalSecs= Math.floor(this.survivalTime/1000);
-  console.log('survivalSecs',survivalSecs,'mode',this.mode)
 
   if(this.mode==='challenge'){if(survivalSecs>parseInt(localStorage.getItem('challengeBest')||0)){
     localStorage.setItem('challengeBest',survivalSecs);
