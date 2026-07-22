@@ -297,7 +297,7 @@ async fetchLeaderboard(table='scores') {
     return;
   }
 
-  const lines=data.map((row,i) => `${i+1}. ${row.name.substring(0,10).padEnd(10)} ${row.score}`);
+  const lines=data.map((row,i) => `${i+1}. ${row.name.substring(0,10).padEnd(10)} ${row.score}${this.lbTables[this.lbIndex]==='challenge_scores'? 's': ''}`);
 this.lbText.setText(lines.join('\n'));
 }
 
@@ -1662,6 +1662,7 @@ function hitObstacle() {
 
   const finalScore=Math.floor(this.score/10);
   const survivalSecs= Math.floor(this.survivalTime/1000);
+  console.log('survivalSecs',survivalSecs,'mode',this.mode)
 
   if(this.mode==='challenge'){if(survivalSecs>parseInt(localStorage.getItem('challengeBest')||0)){
     localStorage.setItem('challengeBest',survivalSecs);
@@ -1760,15 +1761,16 @@ async function submitScore() {
   scene.playerName=name;
   studentText.setText('STUDENT: ' +name);
 
-  if(finalScore< 50){wrap.style.display='none';
+  if(finalScore< 50 && scene.mode!=='challenge'){wrap.style.display='none';
     return;
   }
   wrap.style.display='none';
   let table='scores';
-  let submitScore=finalScore;
-  if (scene.mode==='challenge'){table='challenge_scores';submitScore=survivalSecs;}
-  if (scene.mode==='scoreattack'){table='scoreattack_scores';}
-  const {error}= await db.from(table).insert({name,score:finalScore});
+  let scoreToSubmit=finalScore;
+  if (scene.mode==='challenge'){table='challenge_scores';scoreToSubmit=survivalSecs;}
+  else if (scene.mode==='scoreattack'){table='scoreattack_scores';}
+
+  const {error}= await db.from(table).insert({name,score:scoreToSubmit});
   if (error) {scene.add.text(W/2, H*0.91, 'failed to submit :(', {fontSize:'10px',fill:'#ed0909',fontFamily:'"Press Start 2P"'
   }).setOrigin(0.5).setScrollFactor(0).setDepth(31);
   }else {
