@@ -1,3 +1,8 @@
+//code was all written by me (vicente delgado) but was guided with ai to understand phaser and help syntax, and just debugging in general
+
+
+
+
 const W = window.innerWidth;
 const H = window.innerHeight;
 
@@ -610,7 +615,7 @@ class TutorialScene extends Phaser.Scene {
     this.flash('BEAUTIFUL LANDING', '#37ff00');
     this.tutStep=6;
     this.time.delayedCall(800,()=> {
-      this.waitForInput('JUMP ON BENCH TO GRIND',()=>{
+      this.waitForInput('HOLD JUMP ON BENCH TO GRIND',()=>{
         this.tutStep=7;
       });
     });
@@ -681,7 +686,7 @@ class TutorialScene extends Phaser.Scene {
 }
 
 
-//MODESSCENE
+//MODES SCENE
 class ModesScene extends Phaser.Scene{
   constructor(){super({key:'ModesScene'});
   }
@@ -1128,6 +1133,7 @@ class GameScene extends Phaser.Scene {
       fontSize: '16px', fill: C.hudColor, fontFamily: '"Press Start 2P"'
     }).setScrollFactor(0).setDepth(20);
     this.highScore=parseInt(localStorage.getItem('highScore')) || 0;
+    this.newHighScoreShown=false;
 
     //Pause
     this.pauseKey= this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
@@ -1544,6 +1550,12 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
 
     this.score += 1;
     this.scoreText.setText('SCORE: ' + Math.floor(this.score / 10));
+    if (Math.floor(this.score/10)> this.highScore&& !this.newHighScoreShown){
+      this.newHighScoreShown=true;
+      const hs= this.add.text(W/2, H*0.08, 'NEW HIGH SCORE!!!',{fontSize:'16px',fill:'#ffff00',fontFamily:'"Press Start 2P"'
+      }).setOrigin(0.5).setScrollFactor(0).setDepth(25);
+      this.tweens.add({targets:hs, alpha:0, duration:600,delay:1500,onComplete:()=>hs.destroy()});
+    }
     this.speedText.setText('SPEED: ' + (Math.floor(this.score / 50) + 1));
   }
 
