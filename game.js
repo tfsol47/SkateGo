@@ -1018,7 +1018,7 @@ class GameScene extends Phaser.Scene {
     }).setDepth(10);
 
     const linePx=this.make.graphics({x:0,y:0,add: false});
-    linePx.fillRect(0xffffff)
+    linePx.fillStyle(0xffffff)
     linePx.fillRect(0,0,40,2);
     linePx.generateTexture('speedline',40,2);
     linePx.destroy();
@@ -1049,6 +1049,16 @@ class GameScene extends Phaser.Scene {
     this.grindCooldown=200;
     this.grindScore=0;
     this.physics.add.overlap(this.skater,this.rails,startGrind,null, this);
+
+    this.doubleZones=this.physics.add.staticGroup();
+    this.nextZoneX=Phaser.Math.Between(2000,3000);
+    this.inDoubleZone=false;
+
+    const zonePx= this.make.graphics({x:0,y:0, add:false});
+    zonePx.fillStyle(0xffff00);
+    zonePx.fillRect(0,0,1,1);
+    zonePx.generateTexture('zone_px',1,1);
+    zonePx.destroy();
 
 
     //Controls
@@ -1325,6 +1335,7 @@ class GameScene extends Phaser.Scene {
           this.player.container.y-=15;
         }
       }
+      body.setVelocityX(this.skateSpeed);
 
     // Jump only once when the key is first pressed
 if (
@@ -1364,7 +1375,7 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
       this.skater.y=this.currentRail.y- (this.currentRail.height*this.currentRail.scaleY/2)-30;
       this.grindScore += 1;
       if (this.grindScore> this.longestGrind) this.longestGrind=this.grindScore;
-      this.score+=0.01;
+      this.score+=this.inDoubleZone? 0.02:0.01;
       this.sparks.emitParticleAt(this.skater.x+20,this.skater.y+30,10);
       this.sparks.emitParticleAt(this.skater.x-20,this.skater.y+30,10);
 
@@ -1430,7 +1441,7 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
         if (this.lastTrick===this.currentTrick) {
           const pts=trickPoints [this.currentTrick];
         this.showTrickText(name,pts);
-        this.score+=pts;
+        this.score+=this.inDoubleZone ?pts*2:pts;
         this.showTrickText('SAME TRICK, BOORINGG', -0);
         }else {
           this.comboMultiplier+=0.5;
@@ -1438,9 +1449,9 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
           this.showTrickText(name,pts);
           if (this.lastTrick!==null) {
             this.showTrickText('VARIETY BONUS +20', 20);
-            this.score+=20;
+            this.score+=this.inDoubleZone?40:20;;
           }
-          this.score+=pts;
+          this.score+=this.inDoubleZone ?pts*2:pts;
         }
 
         this.trickCounts[this.currentTrick]+=1;
@@ -1506,6 +1517,31 @@ if (body.velocity.y < 0 && !(this.cursors.up.isDown || this.cursors.space.isDown
       if (this.timerText) this.timerText.setText('SURVIVAL: '+secs+'s');
       this.obstacleInterval= Math.max(200, (Phaser.Math.Between(500,900))-(secs*8));
     }
+    if (this.skater.x+1200>this.nextZoneX){const zoneW=300;
+      const zone=this.add.rectangle(this.nextZoneX,GROUND_Y-2,zoneW,12,0xffff00, 0.3).setDepth(6);
+      this.physics.add.existing(zone,true);
+      this.doubleZones.add(zone);
+
+      //glow effect
+      this.tweens.add({targets:zone, alpha:0.7,duration:500,yoyo:true,repeat:-1});
+
+      this.add.text(this.nextZoneX,GROUND_Y-20, '2X ZONE',{fontSize:'8px',fill:'#eeff00fd',fontFamily:'"Press Start 2P"'}).setDepth(6);
+
+      this.nextZoneX+=Phaser.Math.Between(3000,5000);
+    }
+
+    //check if in zone
+    const wasInZone= this.inDoubleZone;
+    this.inDoubleZone=false;
+    this.doubleZones.getChildren().forEach(zone=>{if(Math.abs(this.skater.x-zone.x)<zone.width/2){
+      this.inDoubleZone=true;
+    }
+  });
+
+  if (this.inDoubleZone&& !wasInZone){this.showTrickText('2X ZONE',0);
+    this.cameras.main.flash(300,255,255,0,true);
+  }
+
     this.score += 1;
     this.scoreText.setText('SCORE: ' + Math.floor(this.score / 10));
     this.speedText.setText('SPEED: ' + (Math.floor(this.score / 50) + 1));
