@@ -34,3 +34,5 @@ HOW TO PLAY:
   Board Sprites- SovietShuckums (itch.io)
   Music-KAIBB(itch.io)
   City Bg- Free game assets (itch.io)
+
+  #BEEST
